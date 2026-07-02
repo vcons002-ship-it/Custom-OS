@@ -52,8 +52,11 @@ screen demonstrates one path through the morphing UI described in
 | Script | What it does |
 |---|---|
 | `setup.bat` | First-time setup (run as Administrator once): installs WSL2 + Ubuntu with nested virtualization (so QEMU gets KVM), copies the repo into WSL, and runs the Linux installer. A reboot may be needed once; re-run after and it resumes. |
-| `install-deps.bat` | Re-runs just the Linux dependency installer (`tools/setup.sh`) inside an existing WSL. |
-| `run.bat` | Starts Clade: boots the real OS image in QEMU if built, otherwise starts the dev harness and prints the image-build command. `run.bat dev` forces the harness; `run.bat headless` boots without a display window. |
+| `install-deps.bat` | Syncs the checkout into WSL and re-runs the Linux dependency installer (`tools/setup.sh`). Run after pulls that change dependencies — it's idempotent, so when in doubt, run it. |
+| `run.bat` | Starts Clade: syncs the checkout into WSL, then boots the real OS image in QEMU if built, otherwise starts the dev harness and prints the image-build command. `run.bat dev` forces the harness; `run.bat headless` boots without a display window. |
+
+Day-to-day order: **`setup.bat` once ever** → **`run.bat` every time** (it picks up
+`git pull` automatically). `install-deps.bat` only when dependencies change.
 
 **Linux** — `tools/setup.sh` to set up, `tools/qemu-run.sh <images-dir>` to boot,
 `tools/dev-run.sh` for the harness.

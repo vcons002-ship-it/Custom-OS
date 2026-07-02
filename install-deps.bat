@@ -23,9 +23,9 @@ echo   [*] Installing Clade's Linux dependencies (tools/setup.sh in WSL) ...
 echo.
 rem --cd starts bash inside THIS folder via WSL's automount - no path
 rem conversion, no command substitution, no escaped quotes to mangle.
-rem Prefer the fast WSL-side repo copy; create it from this checkout if
-rem missing, then run the installer there.
-wsl -d %DISTRO% --cd "%~dp0" -- bash -lc "set -e; if [ ! -f $HOME/clade/Custom-OS/tools/setup.sh ]; then echo '[install-deps] copying repo into WSL filesystem...'; mkdir -p $HOME/clade/Custom-OS; cp -a . $HOME/clade/Custom-OS/; fi; cd $HOME/clade/Custom-OS; exec bash tools/setup.sh"
+rem The checkout is synced into the fast WSL-side copy on every run (so a
+rem git pull on Windows is always picked up), then the installer runs there.
+wsl -d %DISTRO% --cd "%~dp0" -- bash -lc "set -e; echo '[install-deps] syncing repo into WSL filesystem...'; mkdir -p $HOME/clade/Custom-OS; cp -a . $HOME/clade/Custom-OS/; cd $HOME/clade/Custom-OS; exec bash tools/setup.sh"
 
 if errorlevel 1 (
     echo.
