@@ -60,6 +60,19 @@ Day-to-day order: **`setup.bat` once ever** → **`build-image.bat` once** →
 **`run.bat` every time** (it picks up `git pull` automatically). `install-deps.bat`
 only when dependencies change; `build-image.bat` again only when `kernel/` changes.
 
+**If the QEMU window stays stuck in the taskbar and won't open** (a WSLg/GTK
+quirk), try a fallback backend — no rebuild needed:
+
+| Command | Window |
+|---|---|
+| `run.bat` | GTK, via XWayland (default; fixes the stuck-window case) |
+| `run.bat sdl` | SDL backend (try if GTK still won't map) |
+| `run.bat vnc` | VNC server on `localhost:5900` (connect a Windows VNC viewer) |
+| `run.bat headless` | No window; the full boot streams in the terminal |
+
+If none open a window, refresh WSLg once from an elevated PowerShell:
+`wsl --shutdown` then `wsl --update`, and try again.
+
 **Linux** — `tools/setup.sh` to set up, `tools/qemu-run.sh <images-dir>` to boot,
 `tools/dev-run.sh` for the harness.
 

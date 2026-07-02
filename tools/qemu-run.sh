@@ -46,7 +46,22 @@ CONSOLES="console=tty0 console=ttyS0"
 if [ "$MODE" = "headless" ]; then
     DISPLAY_ARGS="-display none"
 else
-    DISPLAY_ARGS="-device virtio-gpu-pci -display gtk"
+    # WSLg exports both DISPLAY and WAYLAND_DISPLAY, so GTK auto-picks its
+    # Wayland backend and QEMU mis-initializes EGL — the window registers a
+    # Windows taskbar entry but never maps onscreen (the reported symptom).
+    # Forcing GTK/SDL through XWayland (GDK_BACKEND=x11) makes it map
+    # reliably; no Windows install needed. No gl=on: GL/virgl is broken under
+    # WSLg and the Weave renders via virtio-gpu DRM regardless.
+    # (Ref: QEMU Launchpad #1775011; microsoft/wslg.)
+    export GDK_BACKEND=x11
+    CLADE_DISPLAY="${CLADE_DISPLAY:-gtk}"
+    DISPLAY_ARGS="-device virtio-gpu-pci -display $CLADE_DISPLAY"
+    case "$CLADE_DISPLAY" in
+        vnc=*)
+            echo "[qemu-run] VNC display — open a Windows VNC viewer and connect"
+            echo "[qemu-run] to  localhost:5900  (needs TigerVNC/RealVNC/etc.)"
+            ;;
+    esac
 fi
 
 # KVM needs /dev/kvm to be openable, not merely present (kvm group).
@@ -79,9 +94,11 @@ echo "[qemu-run] booting..."
 
 exec qemu-system-x86_64 \
   $KVM_ARGS \
+  -name Clade \
   -smp 8 \
   -m "$VM_MEM" \
   -vga none \
+  -audiodev none,id=nosnd \
   -kernel "$IMAGES/bzImage" \
   -drive file="$IMAGES/rootfs.ext4",format=raw,if=virtio \
   -drive file="$DATA_DISK",format=raw,if=virtio \
