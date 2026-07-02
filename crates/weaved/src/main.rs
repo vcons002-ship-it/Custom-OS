@@ -78,10 +78,14 @@ fn run(is_pid1: bool) -> anyhow::Result<()> {
     // weave-ready; we proceed and the supervisor keeps retrying.
     supervisor.await_all_up(std::time::Duration::from_secs(30));
     bus.handle().broadcast(&clade_proto::Event::WeaveReady)?;
-    log(
-        "weaved",
-        "weave-ready — the Weave would paint here (renderer lands at M2)",
-    );
+    log("weaved", "weave-ready");
+
+    // The Weave itself: only where there is a display to take over (the OS
+    // image). In the dev harness the desktop owns the screen; skipping the
+    // spawn keeps the harness honest and quiet.
+    if is_pid1 {
+        supervisor.launch("weave");
+    }
 
     // PID 1 never exits; the harness runs until interrupted.
     supervisor.run_forever();
