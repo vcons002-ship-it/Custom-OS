@@ -1,2 +1,4 @@
-# cmd.exe requires CRLF in batch files regardless of the committer's platform.
+# This repo targets Linux; check out LF everywhere so files copied into WSL
+# are valid there — EXCEPT batch files, which cmd.exe requires to be CRLF.
+* text=auto eol=lf
 *.bat text eol=crlf
