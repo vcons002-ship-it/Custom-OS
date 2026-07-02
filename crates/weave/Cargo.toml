@@ -9,3 +9,5 @@ license.workspace = true
 clade-proto = { workspace = true }
 anyhow = { workspace = true }
 drm = "0.15.0"
+fontdue = "0.9.3"
+evdev = "0.13.2"

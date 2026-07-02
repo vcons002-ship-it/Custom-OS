@@ -35,7 +35,7 @@ Six capabilities, end to end: **boot · morph · index · predict · undo · one
 |---|---|---|
 | OS build system | **Buildroot** external tree | Yocto deferred to Phase 3 (hardware variants). |
 | Language | **Rust** across all services + `weaved` | One toolchain, sandbox-friendly. |
-| Weave renderer | **Prototype both in M2, decide at M2 exit**: `wgpu` retained scene graph vs. an embedded web engine (WebKitGTK/Servo) reusing the mockup HTML/CSS | This is the roadmap's named deferred decision. Criteria: animation fidelity, iteration speed, memory, input latency. Ship whichever clears the bar; the other becomes the fallback. |
+| Weave renderer | **DECIDED at M2: the custom software compositor** (`crates/weave/src/fb.rs`) — damage-driven CPU rendering into the DRM dumb buffer, fontdue text, raw evdev input | Evidence beat the original wgpu-vs-web-engine framing: the VM has no GPU acceleration (wgpu would drag in a software-Mesa stack), an embedded web engine would reintroduce a userland, and M1/M2 proved CPU compositing handles the Weave's calm UI in a ~1.6MB static binary at 30fps. Revisit GPU (virgl or passthrough) when animation complexity demands it. |
 | Inter-service IPC | **Cap'n Proto RPC over Unix domain sockets** | Schema-first messages shared via the `clade-proto` crate; fast, typed, no broker. |
 | Event bus | A small pub/sub in `weaved` over the same sockets | Focus events, materialize/dissolve, journal appends. |
 | On-device LLM | A 3–4B-class instruction model (GGUF) via **llama.cpp** linked into `modeld` | Exact model chosen at M4 against current benchmarks; swappable by design. |
