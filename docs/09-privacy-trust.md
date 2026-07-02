@@ -2,7 +2,7 @@
 
 A living computer knows you. That is only acceptable if the knowing is **yours**: stored
 on your machine, readable by you, correctable by you, deletable by you — and if every
-time knowledge moves or acts, you can see why. Morph's trust model is not a settings
+time knowledge moves or acts, you can see why. Clade's trust model is not a settings
 page; it is load-bearing architecture.
 
 ## Principles

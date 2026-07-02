@@ -22,8 +22,7 @@ of Phases 1–2. Each lists the mitigation the design already carries.
 
 ## Open questions for the owner
 
-1. **Product name** — pick from the shortlist in [01-glossary.md](01-glossary.md) (docs
-   currently use **Morph** as the working title).
+1. ~~**Product name**~~ — **decided: Clade** (see [01-glossary.md](01-glossary.md)).
 2. **Phase-1 content mode** — recommendation is **Images**; confirm or override.
 3. **On-device model footprint** — a 3–8B model implies real RAM/disk on target hardware;
    how much machine is the floor?

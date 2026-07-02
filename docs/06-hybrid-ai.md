@@ -1,6 +1,6 @@
 # 06 — Hybrid AI: The Router, the Manifest, the Lifecycle
 
-Morph's mind is hybrid: an on-device model baked into the OS image for the fast, private,
+Clade's mind is hybrid: an on-device model baked into the OS image for the fast, private,
 always-available work, and cloud reasoning (the Claude API) for the genuinely hard work.
 This document specifies the split, the router that enforces it, the Capability manifest
 (what a "tool" actually is), and the Materialize/Dissolve lifecycle.

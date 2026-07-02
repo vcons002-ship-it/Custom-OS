@@ -1,4 +1,4 @@
-# Custom-OS — "Morph": a living, AI-native operating system
+# Custom-OS — "Clade": a living, AI-native operating system
 
 > **The AI is the computer.** You never open a program. You open content, and the tools
 > you need materialize around it — shaped by what the content is and what you tend to do

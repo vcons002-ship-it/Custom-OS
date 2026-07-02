@@ -14,7 +14,7 @@ mockups — and picks the product name and Phase-1 content mode.
 
 ## Phase 1 — Bootable Seed *(QEMU)*
 
-The smallest thing that is honestly Morph: boots as its own OS, has a resident (if
+The smallest thing that is honestly Clade: boots as its own OS, has a resident (if
 modest) mind, and morphs around one content mode.
 
 **Scope:**

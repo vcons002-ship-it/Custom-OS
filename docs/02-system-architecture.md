@@ -1,6 +1,6 @@
 # 02 — System Architecture
 
-Morph is a standalone operating system. This document describes the full stack from
+Clade is a standalone operating system. This document describes the full stack from
 hardware to Surfaces and the canonical data flow that every other document elaborates.
 
 ## The stack, bottom to top
@@ -26,7 +26,7 @@ replaced. The Weave *is* the userland. Details in [03-os-layer.md](03-os-layer.m
 
 ## The two planes
 
-Morph separates cleanly into:
+Clade separates cleanly into:
 
 - **The experience plane** — the Weave and its Surfaces. Everything the user sees.
   Stateless by design; it can crash and repaint without losing anything.

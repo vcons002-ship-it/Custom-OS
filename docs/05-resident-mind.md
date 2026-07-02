@@ -2,7 +2,7 @@
 
 The difference between an OS with AI features and a living computer is **continuity**.
 A per-event AI is a stateless oracle woken with amnesia a thousand times a day,
-reconstructing who you are from a database each time. Morph's Cortex is instead a
+reconstructing who you are from a database each time. Clade's Cortex is instead a
 **resident**: it holds a continuous present, sleeps and consolidates, keeps a desk you
 can inspect, asks when it is unsure, works with the same tools it hands you, and acts
 boldly because the world it acts in has undo.

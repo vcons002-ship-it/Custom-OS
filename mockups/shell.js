@@ -1,4 +1,4 @@
-/* Morph mockup shell — tiny vanilla helpers shared by every screen.
+/* Clade mockup shell — tiny vanilla helpers shared by every screen.
    No framework, no build, no network. */
 
 /* Materialize a set of elements (adds staggered .materialize classes). */

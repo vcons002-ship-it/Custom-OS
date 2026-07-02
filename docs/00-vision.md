@@ -1,6 +1,8 @@
 # 00 — Vision: The Living Computer
 
-> **Working title: Morph** (provisional — see the shortlist in [01-glossary.md](01-glossary.md)).
+> **Clade** — from the Greek *klados*, "branch": a common ancestor and all its
+> descendants. The first of a new lineage of computers. (Etymology and the names
+> considered: [01-glossary.md](01-glossary.md).)
 
 ## The problem with computers
 
@@ -17,7 +19,7 @@ all workarounds for one design flaw: **the computer does not understand what you
 
 **The AI is the computer.**
 
-Morph is a new kind of operating system — a *living computer* — built on three inversions:
+Clade is a new kind of operating system — a *living computer* — built on three inversions:
 
 1. **Content first, tools second.** You never open a program. You open *content* — a photo,
    an invoice, a source file, a note — and the tools you need materialize around it, shaped
@@ -40,11 +42,11 @@ Morph is a new kind of operating system — a *living computer* — built on thr
 
 ## It is its own OS
 
-Morph is not an application, a launcher, or a skin over a desktop. It is a **standalone
+Clade is not an application, a launcher, or a skin over a desktop. It is a **standalone
 operating system you boot into**. A bare Linux kernel is used strictly as the hardware
 layer — drivers, memory, scheduling, networking — and *everything above it is replaced*.
 There is no desktop environment, no window manager, no shell prompt, no app model. The
-machine boots directly into the Weave, Morph's native environment. Nothing about the
+machine boots directly into the Weave, Clade's native environment. Nothing about the
 architecture is constrained by another system's programs or assumptions.
 
 See [03-os-layer.md](03-os-layer.md) for how this works.

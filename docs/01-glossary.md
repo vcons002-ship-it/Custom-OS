@@ -1,4 +1,4 @@
-# 01 — Glossary: The Morph Lexicon
+# 01 — Glossary: The Clade Lexicon
 
 Every document and mockup in this repository uses this vocabulary. The terms are
 load-bearing: each names a subsystem or a guarantee, and the design stays coherent
@@ -8,7 +8,7 @@ because the words do.
 
 | Term | Definition |
 |---|---|
-| **Morph** | The operating system itself (provisional working title — see shortlist below). A standalone, bootable, AI-native OS: the "living computer." |
+| **Clade** | The operating system itself (provisional working title — see shortlist below). A standalone, bootable, AI-native OS: the "living computer." |
 | **The Weave** | The morphing native userland: compositor + shell + UI. Replaces the desktop/window/app model entirely. One continuous canvas that reshapes around whatever holds focus. |
 | **The Cortex** | The intent and reasoning engine — the brain. A *resident system service*, not a per-event function. Turns signals (content opened, words typed, ambient context) into an **Intent** and a **Plan**. |
 | **Intent** | A structured interpretation of what the user is trying to do right now. The atomic unit the system reasons about. |
@@ -50,21 +50,18 @@ because the words do.
 | **The Redaction Gate** | The local filter every outbound cloud request passes through. Sensitive spans are redacted or the request is held for consent. |
 | **Attention budget** | The finite interruption allowance the system spends to proactively surface things. Dismissals shrink it; accepted suggestions grow it. |
 
-## Product name
+## Product name: Clade
 
-The subsystem lexicon above is settled. The product name is provisional; **Morph** is the
-working title used throughout these documents. Shortlist for the final decision:
+**Clade** — from the Greek *klados*, "branch": in evolutionary biology, a group of
+organisms comprising a common ancestor and all of its descendants. The name is the
+thesis: this is not another product in an existing category but the first ancestor of a
+new lineage of computers — a machine-mind that could one day be considered its own
+species. It also lands, by pure convergent evolution, one letter from *Claude* — the AI
+that helped design it. That homage is a happy accident of Greek, and we are keeping it.
 
-| Name | Case for it |
-|---|---|
-| **Morph** *(recommended)* | Names the defining behavior — the OS that reshapes around you. Short, verb-like, honest. |
-| **Aria** | The living, expressive quality; a system with a voice. Softer, more companion-like. |
-| **Lumen** | Light/clarity; the calm, legible qualities of the design. |
-| **Flux** | Continuous change as identity. Edgier; risks sounding unstable. |
-| **Continuum** | The deepest claim — continuity is what makes it alive. Longer, more formal. |
-
-Renaming later is a find-and-replace across `docs/` and `mockups/`; nothing structural
-depends on the product name.
+Names considered and passed over: Morph (the original working title — kept as the verb
+the Weave *does*), Cambria, Eukarya, LUCA, Morpho, Chrysalis, Aria, Lumen, Flux,
+Continuum.
 
 ---
 *Next: [02-system-architecture.md](02-system-architecture.md) — the full stack, bottom to top.*

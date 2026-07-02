@@ -1,6 +1,6 @@
 # 03 — The OS Layer: Its Own Operating System
 
-Morph is booted, not launched. This document specifies the layer that makes that true:
+Clade is booted, not launched. This document specifies the layer that makes that true:
 the boot path, the init design, the hardware abstraction, and precisely what "throwing
 away the userland" means.
 
@@ -20,7 +20,7 @@ Every *convention* that normally comes with Linux is discarded:
 | The file manager | The Substrate, navigated by meaning |
 
 The result is honestly *its own OS*: nothing above the syscall boundary is inherited.
-If a from-scratch or non-Linux kernel ever becomes worthwhile, the interface Morph
+If a from-scratch or non-Linux kernel ever becomes worthwhile, the interface Clade
 depends on is narrow (syscalls + the device classes below) — the mind plane and the
 Weave would not know the difference.
 
@@ -43,12 +43,12 @@ flowchart LR
 - **Single-user by design** (v1): the machine *is* the person's computer. Disk encryption
   unlock happens at boot; there is no login-session concept to inherit.
 - **No console handoff**: the kernel is configured quiet; the first thing a user ever
-  sees is Morph. (`00-boot.html` in the mockups shows this sequence.)
+  sees is Clade. (`00-boot.html` in the mockups shows this sequence.)
 
 ## `weaved`: init, supervisor, compositor host
 
 PID 1 is deliberately small: reap zombies, supervise services, own the display. It is
-**not** systemd; it is a purpose-built Rust init (~the scope of runit) because Morph's
+**not** systemd; it is a purpose-built Rust init (~the scope of runit) because Clade's
 service graph is tiny and fixed:
 
 | Service | Role | Restart policy |
@@ -81,7 +81,7 @@ The kernel provides drivers; a thin HAL exposes five device classes to the Weave
 - There is **no app model**: no launchable third-party processes with their own windows.
   The unit of extension is the **Capability manifest**; its tool bindings run as sandboxed
   workers under `capd`, and its UI is a **Surface** the Weave composites. Third parties
-  extend Morph by publishing Capabilities, not by shipping apps.
+  extend Clade by publishing Capabilities, not by shipping apps.
 - There is **no window management** because there are no windows: the Weave lays out the
   Stage, Tool Halo, Foresight Rail, and Intent Bar itself ([07-interaction-model.md](07-interaction-model.md)).
 - Background work — indexing, inference, sync, Dreamtime — runs as supervised services,
