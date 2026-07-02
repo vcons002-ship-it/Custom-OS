@@ -1,6 +1,6 @@
 config BR2_PACKAGE_CLADE
 	bool "clade"
-	select BR2_PACKAGE_HOST_RUSTC
 	help
 	  Clade's userland: weaved (PID 1), the mind-plane services, and the
-	  Weave. Built from the workspace at the repository root.
+	  Weave. Prebuilt static (musl) binaries from the workspace at the
+	  repository root; see package/clade/clade.mk.

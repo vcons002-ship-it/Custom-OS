@@ -20,13 +20,21 @@ jobs:
       - run: cargo build --workspace --locked
       - run: cargo test --workspace --locked
 
-  # The full Buildroot image (~45 min cold) runs on demand, not per-push.
+  # The full OS image build runs on demand, not per-push. Two steps, same as
+  # build-image.bat: static musl binaries on the host toolchain, then Buildroot
+  # assembles kernel + rootfs around them.
   image:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-musl
+      - uses: Swatinem/rust-cache@v2
+      - name: Build Clade static binaries (musl)
+        run: cargo build --release --target x86_64-unknown-linux-musl --locked
       - name: Fetch Buildroot
         run: git clone --depth 1 --branch 2025.02.x https://gitlab.com/buildroot.org/buildroot.git ../buildroot
       - name: Build image
@@ -34,6 +42,14 @@ jobs:
           cd ../buildroot
           make BR2_EXTERNAL="$GITHUB_WORKSPACE/kernel/buildroot-external" clade_x86_64_defconfig
           make
+      - name: Boot test (headless QEMU, expect weave-ready on serial)
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq qemu-system-x86
+          CLADE_DATA=/tmp/clade-data.img timeout 300 \
+            "$GITHUB_WORKSPACE/tools/qemu-run.sh" ../buildroot/output/images headless \
+            > boot.log 2>&1 || true
+          grep -q "weave-ready" boot.log || { tail -50 boot.log; exit 1; }
+          echo "boot test passed"
       - uses: actions/upload-artifact@v4
         with:
           name: clade-image

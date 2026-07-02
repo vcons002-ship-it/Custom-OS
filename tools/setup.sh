@@ -59,6 +59,18 @@ fi
 # Make cargo visible for the rest of this script even on fresh installs.
 export PATH="$HOME/.cargo/bin:$PATH"
 rustup component add rustfmt clippy >/dev/null 2>&1 || true
+# The OS image ships static musl binaries (see kernel/README.md).
+rustup target add x86_64-unknown-linux-musl >/dev/null 2>&1 || true
+
+# ---- 3b. KVM access ----------------------------------------------------------
+# /dev/kvm existing is not enough — the user must be able to open it.
+if [ -e /dev/kvm ] && [ ! -w /dev/kvm ] && [ "$(id -u)" -ne 0 ]; then
+    step "adding $USER to the kvm group (needed to open /dev/kvm)"
+    $SUDO usermod -aG kvm "$USER" || warn "could not add to kvm group"
+    warn "group change takes effect after WSL restarts: run 'wsl --shutdown'"
+    warn "from Windows once setup finishes, then reopen. Until then QEMU runs"
+    warn "unaccelerated."
+fi
 
 # ---- 4. Buildroot (fetch now, build later) ----------------------------------
 if [ -d "$BUILDROOT_DIR/.git" ]; then

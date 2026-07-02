@@ -152,6 +152,14 @@ fn install_shutdown_handler() {
                 unsafe { libc::kill(pid, libc::SIGTERM) };
             }
         }
+        // PID 1 must never exit — the kernel panics ("attempted to kill
+        // init"). Power the machine off properly instead.
+        if std::process::id() == 1 {
+            unsafe {
+                libc::sync();
+                libc::reboot(libc::LINUX_REBOOT_CMD_POWER_OFF);
+            }
+        }
         unsafe { libc::_exit(0) };
     }
     unsafe {

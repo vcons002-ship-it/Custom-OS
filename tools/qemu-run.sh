@@ -25,14 +25,29 @@ if [ ! -f "$DATA_DISK" ]; then
     mkfs.ext4 -q -F "$DATA_DISK"
 fi
 
-DISPLAY_ARGS="-device virtio-gpu-pci -display gtk,gl=on"
-[ "$MODE" = "headless" ] && DISPLAY_ARGS="-display none"
+# GUI mode: virtio-gpu window (no gl=on — GL under WSLg is unreliable and we
+# don't need 3D yet). The LAST console= becomes /dev/console, i.e. where
+# weaved's banner goes: the GUI window when there is one, serial otherwise.
+if [ "$MODE" = "headless" ]; then
+    DISPLAY_ARGS="-display none"
+    CONSOLES="console=tty0 console=ttyS0"
+else
+    DISPLAY_ARGS="-device virtio-gpu-pci -display gtk"
+    CONSOLES="console=ttyS0 console=tty0"
+fi
 
-KVM_ARGS="-enable-kvm -cpu host"
-[ -e /dev/kvm ] || {
+# KVM needs /dev/kvm to be openable, not merely present (kvm group).
+if [ -w /dev/kvm ]; then
+    KVM_ARGS="-enable-kvm -cpu host"
+elif [ -e /dev/kvm ]; then
+    echo "[qemu-run] /dev/kvm exists but is not writable — run tools/setup.sh"
+    echo "[qemu-run] (adds you to the kvm group), then 'wsl --shutdown' and retry."
+    echo "[qemu-run] Continuing unaccelerated (slow)."
+    KVM_ARGS="-cpu qemu64"
+else
     echo "[qemu-run] /dev/kvm missing — running unaccelerated (see tools/setup.sh KVM notes)"
     KVM_ARGS="-cpu qemu64"
-}
+fi
 
 exec qemu-system-x86_64 \
   $KVM_ARGS \
@@ -41,7 +56,7 @@ exec qemu-system-x86_64 \
   -kernel "$IMAGES/bzImage" \
   -drive file="$IMAGES/rootfs.ext4",format=raw,if=virtio \
   -drive file="$DATA_DISK",format=raw,if=virtio \
-  -append "root=/dev/vda rw quiet init=/sbin/init console=ttyS0" \
+  -append "root=/dev/vda rw quiet init=/sbin/init $CONSOLES" \
   -serial mon:stdio \
   -netdev user,id=n0 -device virtio-net-pci,netdev=n0 \
   $DISPLAY_ARGS
