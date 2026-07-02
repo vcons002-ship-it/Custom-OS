@@ -29,8 +29,13 @@ const BANNER: &str = r#"
 fn main() -> anyhow::Result<()> {
     let is_pid1 = std::process::id() == 1;
 
+    // Dying takes the whole mind plane with us — proper init behavior in the
+    // image, and no orphaned services when the dev harness is Ctrl-C'd/killed.
+    install_shutdown_handler();
+
     if is_pid1 {
         mount_pseudo_filesystems();
+        mount_data_volume();
         // Orphans reparent to us; reap them so nothing zombies.
         spawn_reaper();
     }
@@ -93,6 +98,69 @@ fn mount_pseudo_filesystems() {
         }
     }
     let _ = std::fs::create_dir_all("/run/clade");
+}
+
+/// Mount the persistent data volume (/dev/vdb → /data) if the reference
+/// machine attached one (tools/qemu-run.sh always does). Everything that must
+/// survive sessions and OS-image rebuilds lives under /data: the Substrate
+/// index, Context Graph, Memory, the Current, and the Journal
+/// (docs/08-data-knowledge-model.md). Absence is logged, never fatal — the
+/// OS still boots; the mind just has nowhere durable to write.
+fn mount_data_volume() {
+    const DEVICE: &str = "/dev/vdb";
+    const TARGET: &str = "/data";
+    if !Path::new(DEVICE).exists() {
+        log(
+            "weaved",
+            "no data volume at /dev/vdb — running without durable storage",
+        );
+        return;
+    }
+    let _ = std::fs::create_dir_all(TARGET);
+    let (src, tgt, fst) = (cstr(DEVICE), cstr(TARGET), cstr("ext4"));
+    let rc = unsafe {
+        libc::mount(
+            src.as_ptr(),
+            tgt.as_ptr(),
+            fst.as_ptr(),
+            0,
+            std::ptr::null(),
+        )
+    };
+    if rc == 0 {
+        log("weaved", "data volume mounted at /data");
+    } else {
+        log(
+            "weaved",
+            &format!(
+                "mount {DEVICE} on {TARGET} failed: {}",
+                std::io::Error::last_os_error()
+            ),
+        );
+    }
+}
+
+/// On SIGTERM/SIGINT: TERM each supervised child precisely (their PIDs live
+/// in a signal-safe atomic array — no process-group nuke, which would take
+/// the dev harness's parent shell down too), then exit. Async-signal-safe by
+/// construction: atomic loads, kill(), _exit() only.
+fn install_shutdown_handler() {
+    extern "C" fn on_shutdown(_sig: libc::c_int) {
+        for slot in &supervisor::CHILD_PIDS {
+            let pid = slot.load(std::sync::atomic::Ordering::SeqCst);
+            if pid > 0 {
+                unsafe { libc::kill(pid, libc::SIGTERM) };
+            }
+        }
+        unsafe { libc::_exit(0) };
+    }
+    unsafe {
+        libc::signal(
+            libc::SIGTERM,
+            on_shutdown as *const () as libc::sighandler_t,
+        );
+        libc::signal(libc::SIGINT, on_shutdown as *const () as libc::sighandler_t);
+    }
 }
 
 /// Reap any child that reparents to PID 1, forever, on a dedicated thread.

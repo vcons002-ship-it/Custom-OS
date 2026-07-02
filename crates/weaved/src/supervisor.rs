@@ -6,6 +6,7 @@ use crate::log;
 use clade_proto::Event;
 use std::collections::HashSet;
 use std::process::{Child, Command};
+use std::sync::atomic::{AtomicI32, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
@@ -14,6 +15,12 @@ use std::time::Duration;
 const BACKOFF_START: Duration = Duration::from_secs(1);
 const BACKOFF_CAP: Duration = Duration::from_secs(16);
 const STABLE_AFTER: Duration = Duration::from_secs(60);
+
+/// Live child PIDs, one slot per supervised service, readable from a signal
+/// handler (atomics only — no locks). 0 = slot empty. The shutdown handler
+/// in main.rs TERMs these precisely instead of nuking a process group the
+/// dev harness shares with its parent shell.
+pub static CHILD_PIDS: [AtomicI32; 16] = [const { AtomicI32::new(0) }; 16];
 
 pub struct Supervisor {
     bus: BusHandle,
@@ -32,6 +39,8 @@ impl Supervisor {
 
     /// Launch `service` on its own supervision thread.
     pub fn launch(&mut self, service: &str) {
+        let slot = self.expected;
+        assert!(slot < CHILD_PIDS.len(), "more services than PID slots");
         self.expected += 1;
         let bus = self.bus.clone();
         let up = self.up.clone();
@@ -47,8 +56,10 @@ impl Supervisor {
                             "supervisor",
                             &format!("{service} started (pid {})", child.id()),
                         );
+                        CHILD_PIDS[slot].store(child.id() as i32, Ordering::SeqCst);
                         up.lock().expect("supervisor lock").insert(service.clone());
                         let code = child.wait().ok().and_then(|s| s.code());
+                        CHILD_PIDS[slot].store(0, Ordering::SeqCst);
                         up.lock().expect("supervisor lock").remove(&service);
                         let _ = bus.broadcast(&Event::ServiceDown {
                             service: service.clone(),

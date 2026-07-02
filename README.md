@@ -47,16 +47,26 @@ screen demonstrates one path through the morphing UI described in
 
 ## Set up on your machine
 
-- **Windows 11** — run `setup.bat` (as Administrator the first time). It bootstraps
-  WSL2 with nested virtualization (so QEMU gets KVM), clones the repo inside the WSL
-  filesystem, and runs `tools/setup.sh` there. A reboot may be required once; re-run
-  the script after and it resumes.
-- **Linux** — run `tools/setup.sh`.
+**Windows 11** (three .bat entry points, run from this folder):
 
-Either way the script installs the toolchain (Rust, QEMU, Buildroot prerequisites),
-fetches Buildroot, builds and tests the workspace, and proves the dev loop by booting
-the `weaved` harness to `weave-ready`. It finishes by printing the commands for the
-full OS-image build (~30–60 min once) — see [kernel/README.md](kernel/README.md).
+| Script | What it does |
+|---|---|
+| `setup.bat` | First-time setup (run as Administrator once): installs WSL2 + Ubuntu with nested virtualization (so QEMU gets KVM), copies the repo into WSL, and runs the Linux installer. A reboot may be needed once; re-run after and it resumes. |
+| `install-deps.bat` | Re-runs just the Linux dependency installer (`tools/setup.sh`) inside an existing WSL. |
+| `run.bat` | Starts Clade: boots the real OS image in QEMU if built, otherwise starts the dev harness and prints the image-build command. `run.bat dev` forces the harness; `run.bat headless` boots without a display window. |
+
+**Linux** — `tools/setup.sh` to set up, `tools/qemu-run.sh <images-dir>` to boot,
+`tools/dev-run.sh` for the harness.
+
+Setup installs the toolchain (Rust, QEMU, Buildroot prerequisites), fetches Buildroot,
+builds and tests the workspace, and proves the dev loop by booting the `weaved` harness
+to `weave-ready`. The full OS-image build (~30–60 min once) is documented in
+[kernel/README.md](kernel/README.md).
+
+**Persistence:** Clade's mind lives on a dedicated data volume
+(`~/clade/clade-data.img` inside WSL, auto-created at first boot, mounted at `/data`
+in the OS). It survives shutdowns and OS-image rebuilds; delete the file to
+factory-reset the mind without touching your files or the OS image.
 
 ## Status
 
