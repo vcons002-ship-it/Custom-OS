@@ -34,34 +34,48 @@ fi
 
 # GUI mode: virtio-gpu is the ONLY display adapter (-vga none: QEMU's default
 # std-VGA would otherwise be the head the window shows — blank). No gl=on:
-# GL under WSLg is unreliable and we don't need 3D yet. The LAST console=
-# becomes /dev/console, i.e. where weaved's banner goes: the GUI window when
-# there is one, serial otherwise.
+# GL under WSLg is unreliable and we don't need 3D yet.
+#
+# The Weave paints the graphical window directly via DRM/KMS (it renders to
+# the GPU, not to /dev/console), so we route ALL text — kernel boot + every
+# Clade log — to the serial console (this terminal) by making ttyS0 the last
+# console=. That gives live boot feedback here while the window shows the
+# Weave. The kernel is NOT quiet, so a slow (unaccelerated) boot still scrolls
+# progress instead of sitting on a blank window.
+CONSOLES="console=tty0 console=ttyS0"
 if [ "$MODE" = "headless" ]; then
     DISPLAY_ARGS="-display none"
-    CONSOLES="console=tty0 console=ttyS0"
 else
     DISPLAY_ARGS="-device virtio-gpu-pci -display gtk"
-    CONSOLES="console=ttyS0 console=tty0"
 fi
 
 # KVM needs /dev/kvm to be openable, not merely present (kvm group).
 if [ -w /dev/kvm ]; then
     KVM_ARGS="-enable-kvm -cpu host"
-elif [ -e /dev/kvm ]; then
-    echo "[qemu-run] /dev/kvm exists but is not writable — run tools/setup.sh"
-    echo "[qemu-run] (adds you to the kvm group), then 'wsl --shutdown' and retry."
-    echo "[qemu-run] Continuing unaccelerated (slow)."
-    KVM_ARGS="-cpu qemu64"
+    SPEED="KVM-accelerated (boots in seconds)"
 else
-    echo "[qemu-run] /dev/kvm missing — running unaccelerated (see tools/setup.sh KVM notes)"
     KVM_ARGS="-cpu qemu64"
+    SPEED="UNACCELERATED (no KVM) — boot may take 1-3 minutes; watch this window"
+    if [ -e /dev/kvm ]; then
+        echo "[qemu-run] /dev/kvm is present but not writable by you. For fast boots:"
+        echo "[qemu-run]     wsl -d Ubuntu-24.04 -- sudo usermod -aG kvm \$USER"
+        echo "[qemu-run]     wsl --shutdown        (from Windows, then reopen)"
+    else
+        echo "[qemu-run] /dev/kvm missing — enable nestedVirtualization (setup.bat)."
+    fi
 fi
 
 # Size the VM to what this environment actually has (the reference 12G only
 # when the WSL VM is big enough — .wslconfig may not have applied).
 VM_MEM=$(awk '/MemTotal/ { kb=$2; if (kb > 15000000) print "12G"; else if (kb > 9000000) print "6G"; else print "3G" }' /proc/meminfo)
 echo "[qemu-run] VM memory: $VM_MEM"
+echo "[qemu-run] $SPEED"
+if [ "$MODE" != "headless" ]; then
+    echo "[qemu-run] A QEMU window will open. It stays BLACK during boot and turns"
+    echo "[qemu-run] into the Weave once the display is taken over. Boot progress"
+    echo "[qemu-run] scrolls HERE. (Fullscreen: Ctrl+Alt+F · release mouse: Ctrl+Alt+G)"
+fi
+echo "[qemu-run] booting..."
 
 exec qemu-system-x86_64 \
   $KVM_ARGS \
@@ -71,7 +85,7 @@ exec qemu-system-x86_64 \
   -kernel "$IMAGES/bzImage" \
   -drive file="$IMAGES/rootfs.ext4",format=raw,if=virtio \
   -drive file="$DATA_DISK",format=raw,if=virtio \
-  -append "root=/dev/vda rw quiet init=/sbin/init $CONSOLES" \
+  -append "root=/dev/vda rw init=/sbin/init $CONSOLES" \
   -serial mon:stdio \
   -netdev user,id=n0 -device virtio-net-pci,netdev=n0 \
   $DISPLAY_ARGS
