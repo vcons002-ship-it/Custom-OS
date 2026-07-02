@@ -1,0 +1,40 @@
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo build --workspace --locked
+      - run: cargo test --workspace --locked
+
+  # The full Buildroot image (~45 min cold) runs on demand, not per-push.
+  image:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch Buildroot
+        run: git clone --depth 1 --branch 2025.02.x https://gitlab.com/buildroot.org/buildroot.git ../buildroot
+      - name: Build image
+        run: |
+          cd ../buildroot
+          make BR2_EXTERNAL="$GITHUB_WORKSPACE/kernel/buildroot-external" clade_x86_64_defconfig
+          make
+      - uses: actions/upload-artifact@v4
+        with:
+          name: clade-image
+          path: ../buildroot/output/images/

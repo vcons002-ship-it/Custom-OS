@@ -1,0 +1,10 @@
+[package]
+name = "capd"
+description = "Capability registry, manifest validation, sandboxed workers"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+clade-proto = { workspace = true }
+anyhow = { workspace = true }

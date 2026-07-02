@@ -1,0 +1,1 @@
+source "$BR2_EXTERNAL_CLADE_PATH/package/clade/Config.in"

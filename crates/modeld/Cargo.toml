@@ -1,0 +1,10 @@
+[package]
+name = "modeld"
+description = "On-device model runtime: facets, embeddings, the router"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+clade-proto = { workspace = true }
+anyhow = { workspace = true }

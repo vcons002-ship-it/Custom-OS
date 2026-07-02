@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clade — code flow</title>
+<link rel="stylesheet" href="shell.css">
+<style>
+  .code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px;
+          line-height: 1.65; padding: 22px 26px; color: #c9d3e8; }
+  .code .kw { color: #a78bfa; } .code .fn { color: #5eead4; }
+  .code .str { color: #f0b47f; } .code .cm { color: #5b6478; }
+  .code .num-g { color: #5b6478; user-select: none; margin-right: 18px; }
+</style>
+</head>
+<body>
+<nav class="mock-nav"><a href="index.html">← all screens</a><span>04 · code flow</span></nav>
+<div class="mock-note">Facets <code>code (0.99) · typescript (0.97)</code>. The rail is the
+Context Graph speaking: imports and the covering test were indexed by the Substrate, not guessed.</div>
+
+<div class="weave">
+  <div class="stage-zone">
+
+    <div class="halo top">
+      <button class="surface-chip cloud materialize d1"><span class="glyph">❔</span> Explain</button>
+      <button class="surface-chip materialize d2"><span class="glyph">✎</span> Edit</button>
+      <button class="surface-chip materialize d3"><span class="glyph">▶</span> Run</button>
+      <button class="surface-chip materialize d4"><span class="glyph">±</span> Diff</button>
+      <button class="surface-chip materialize d5"><span class="glyph">⌕</span> Find callers</button>
+    </div>
+
+    <figure class="stage materialize" style="max-width:min(720px,92%)">
+      <div class="code"><span class="num-g">12</span><span class="kw">export function</span> <span class="fn">parseManifest</span>(raw: <span class="kw">string</span>): Capability {
+<span class="num-g">13</span>  <span class="kw">const</span> doc = json.<span class="fn">parse</span>(raw);
+<span class="num-g">14</span>  <span class="cm">// facets gate eligibility — never trust the extension</span>
+<span class="num-g">15</span>  <span class="fn">assertScopes</span>(doc.permissions, <span class="str">"declared"</span>);
+<span class="num-g">16</span>  <span class="kw">if</span> (!doc.reversibility) <span class="kw">throw new</span> <span class="fn">GateError</span>(<span class="str">"undeclared reversibility"</span>);
+<span class="num-g">17</span>  <span class="kw">return</span> <span class="fn">bindSurface</span>(doc, registry.<span class="fn">sandbox</span>(doc.permissions));
+<span class="num-g">18</span>}</div>
+      <figcaption class="stage-caption">capd/src/manifest.ts · code 0.99 · typescript 0.97</figcaption>
+    </figure>
+  </div>
+
+  <aside class="rail">
+    <div class="rail-title">related — from the graph</div>
+    <div class="rail-card materialize d1">
+      <h4>imports</h4>
+      <p>scopes.ts · surface.ts · registry.ts</p>
+      <button class="why-toggle">why?</button>
+      <div class="why">Static edges from Substrate indexing: <em>part-of</em> module capd,
+      <em>used-with</em> weight 0.9 this week.</div>
+    </div>
+    <div class="rail-card materialize d2">
+      <h4>covered by</h4>
+      <p>manifest.test.ts — last run green, 2 days ago</p>
+    </div>
+    <div class="rail-title">next</div>
+    <div class="rail-card suggestion materialize d3">
+      <h4>Write a test for the GateError path?</h4>
+      <p>Line 16 is the only branch manifest.test.ts never reaches.</p>
+      <span class="confidence">confidence 0.77</span>
+      <button class="why-toggle">why?</button>
+      <div class="why">Coverage map from the last run + you added the reversibility check
+      yesterday (journal 18:41) and wrote tests within a day for 5 of your last 6 new branches.</div>
+      <div class="dismiss-row">
+        <button>yes — draft it</button>
+        <button onclick="askLesson(this)">dismiss…</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="intent-zone">
+    <div class="presence"></div>
+    <div class="intent-bar">
+      <input placeholder='try: "explain what bindSurface does with the sandbox"'>
+      <span class="dial-mini">dial: <b>Balanced</b> · explain → cloud, excerpt only</span>
+    </div>
+  </div>
+</div>
+<script src="shell.js"></script>
+</body>
+</html>

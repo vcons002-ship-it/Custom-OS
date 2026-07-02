@@ -1,0 +1,27 @@
+# Clade OS image — x86_64 reference (QEMU/KVM + virtio)
+BR2_x86_64=y
+BR2_TOOLCHAIN_BUILDROOT_GLIBC=y
+
+# Kernel: hardware layer only, quiet, virtio for the QEMU reference machine
+BR2_LINUX_KERNEL=y
+BR2_LINUX_KERNEL_LATEST_VERSION=y
+BR2_LINUX_KERNEL_USE_ARCH_DEFAULT_CONFIG=y
+BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES="$(BR2_EXTERNAL_CLADE_PATH)/board/clade/kernel.fragment"
+
+# No traditional userland: no busybox shell as init, no getty. BusyBox stays
+# for the recovery console only (docs/03-os-layer.md: a service door).
+BR2_INIT_NONE=y
+BR2_SYSTEM_BIN_SH_NONE=y
+BR2_PACKAGE_BUSYBOX=y
+
+# Clade IS the userland
+BR2_PACKAGE_CLADE=y
+
+# Boot straight into weaved
+BR2_ROOTFS_OVERLAY="$(BR2_EXTERNAL_CLADE_PATH)/board/clade/rootfs-overlay"
+BR2_ROOTFS_POST_BUILD_SCRIPT="$(BR2_EXTERNAL_CLADE_PATH)/board/clade/post-build.sh"
+
+# Image: ext4 root for -drive boot
+BR2_TARGET_ROOTFS_EXT2=y
+BR2_TARGET_ROOTFS_EXT2_4=y
+BR2_TARGET_ROOTFS_EXT2_SIZE="256M"

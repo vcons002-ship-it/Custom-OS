@@ -1,0 +1,11 @@
+[package]
+name = "clade-proto"
+description = "Shared message types and the bus wire protocol for Clade's mind plane"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }

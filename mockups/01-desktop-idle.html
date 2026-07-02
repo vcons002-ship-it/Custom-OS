@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clade — the idle Weave</title>
+<link rel="stylesheet" href="shell.css">
+<style>
+  .idle-stage { text-align: center; }
+  .idle-stage h2 { font-size: 26px; font-weight: 600; letter-spacing: -.01em; }
+  .idle-stage p  { color: var(--ink-dim); margin-top: 8px; font-size: 14.5px; }
+  .threads { display: flex; gap: 10px; justify-content: center; margin-top: 26px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<nav class="mock-nav"><a href="index.html">← all screens</a><span>01 · the idle Weave</span></nav>
+<div class="mock-note">Calm is the default. Nothing demands attention; the rail holds a
+quiet briefing; the presence breathes. Click a thread or the photo suggestion.</div>
+
+<div class="weave">
+  <div class="stage-zone">
+    <div class="idle-stage materialize">
+      <h2>Good morning.</h2>
+      <p>While you slept I indexed 214 new items, tidied the beach-trip thread,<br>
+         and left two questions on my desk — whenever you like.</p>
+      <div class="threads">
+        <a class="surface-chip materialize d1" href="02-photo-flow.html" style="text-decoration:none">
+          <span class="glyph">⟡</span> beach trip — 7 new photos
+        </a>
+        <a class="surface-chip materialize d2" href="03-pdf-flow.html" style="text-decoration:none">
+          <span class="glyph">⟡</span> invoice season — 1 arrived
+        </a>
+        <a class="surface-chip materialize d3" href="09-workbench.html" style="text-decoration:none">
+          <span class="glyph">✎</span> my desk — 2 questions
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <aside class="rail">
+    <div class="rail-title">this morning</div>
+    <div class="rail-card materialize d2">
+      <h4>Dreamtime finished 03:12</h4>
+      <p>Indexed · consolidated · pre-warmed photo tools for the new shoot.</p>
+    </div>
+    <a class="rail-card suggestion materialize d3" href="02-photo-flow.html" style="text-decoration:none;display:block">
+      <h4>The beach shoot is ready</h4>
+      <p>7 photos imported overnight. You usually pick favorites the next morning.</p>
+      <span class="confidence">confidence 0.81</span>
+    </a>
+  </aside>
+
+  <div class="intent-zone">
+    <div class="presence"></div>
+    <div class="intent-bar">
+      <input placeholder="ask the computer — open, find, do…">
+      <span class="dial-mini">dial: <b>Balanced</b></span>
+    </div>
+  </div>
+</div>
+<script src="shell.js"></script>
+</body>
+</html>

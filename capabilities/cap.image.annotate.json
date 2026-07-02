@@ -1,0 +1,15 @@
+{
+  "id": "cap.image.annotate",
+  "version": "0.1.0",
+  "appliesTo": [{ "facet": "image", "min": 0.7, "count": "==1" }],
+  "intentTriggers": ["annotate", "mark up", "draw on", "label"],
+  "contract": {
+    "inputs": { "item": "sub:item" },
+    "outputs": { "result": "sub:item" },
+    "tools": [{ "name": "draw_overlay", "bind": "worker:image-ops" }]
+  },
+  "surface": { "form": "halo-panel", "controls": ["pen", "arrow", "text", "accept"], "stage": "draw-overlay" },
+  "permissions": ["read:selected-items", "write:substrate"],
+  "memoryKeys": [],
+  "reversibility": "undoable"
+}

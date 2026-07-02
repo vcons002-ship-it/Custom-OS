@@ -1,0 +1,10 @@
+[package]
+name = "substrated"
+description = "The Substrate: filesystem watcher and semantic indexer"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+clade-proto = { workspace = true }
+anyhow = { workspace = true }
