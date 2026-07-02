@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Morph — the privacy dial</title>
+<link rel="stylesheet" href="shell.css">
+<style>
+  .dial-row { display: flex; gap: 10px; }
+  .dial-opt { flex: 1; text-align: center; padding: 14px 10px; border-radius: 14px;
+              border: 1px solid var(--stroke); cursor: pointer; transition: all .2s; }
+  .dial-opt h4 { font-size: 13.5px; margin-bottom: 4px; }
+  .dial-opt p { font-size: 11.5px; color: var(--ink-dim); }
+  .dial-opt.on { border-color: var(--presence-dim); background: rgba(94,234,212,.06); }
+  .dial-opt.on h4 { color: var(--presence); }
+  .trust-col { display: flex; flex-direction: column; gap: 14px; max-width: 620px; width: 100%; }
+</style>
+</head>
+<body>
+<nav class="mock-nav"><a href="index.html">← all screens</a><span>07 · the privacy dial</span></nav>
+<div class="mock-note">Trust as architecture: the dial, a held consent, and the Journal as
+audit timeline. Click the dial positions.</div>
+
+<div class="weave" style="grid-template-columns:1fr">
+  <div class="stage-zone" style="align-items:flex-start;padding-top:40px;overflow-y:auto">
+    <div class="trust-col">
+
+      <div class="panel materialize">
+        <h3>the privacy dial</h3>
+        <div class="dial-row">
+          <div class="dial-opt" onclick="setDial(this,0)">
+            <h4>Airgapped</h4><p>Nothing leaves. Ever. Cloud work queues, with its reason shown.</p>
+          </div>
+          <div class="dial-opt on" onclick="setDial(this,1)">
+            <h4>Balanced</h4><p>Non-sensitive work may escalate; anything flagged asks first.</p>
+          </div>
+          <div class="dial-opt" onclick="setDial(this,2)">
+            <h4>Cloud-boosted</h4><p>Liberal escalation. Still redacted. One-way doors still stop.</p>
+          </div>
+        </div>
+        <p style="font-size:11.5px;color:var(--ink-faint);margin-top:10px" id="dial-note">
+          Overrides bind to items and entities: <em>this folder never leaves · anything
+          involving Mom asks first.</em></p>
+      </div>
+
+      <div class="gate-card materialize d1">
+        <h4>Held for consent — Summarize atlas-hosting-jun.pdf</h4>
+        <p>Router: local confidence 0.41, financial synthesis → cloud suggested.
+           Would send: <b>excerpt (~800 chars)</b>, with
+           <span class="redaction">acct ▮▮▮▮-▮▮19</span> and
+           <span class="redaction">billing address ▮▮▮▮▮</span> masked.</p>
+        <div class="gate-actions">
+          <button class="primary">allow once</button>
+          <button>always for this sender</button>
+          <button class="danger">keep local</button>
+        </div>
+      </div>
+
+      <div class="panel materialize d2">
+        <h3>the journal — what has left, what has changed</h3>
+        <div class="journal-row"><span class="who ai">mind</span>
+          <span class="what">summarized invoice — cloud, 2 spans redacted, excerpt only</span>
+          <span style="font-size:11px;color:var(--ink-faint)">09:14</span></div>
+        <div class="journal-row"><span class="who">you</span>
+          <span class="what">cropped IMG_0142</span><button class="undo">undo</button></div>
+        <div class="journal-row"><span class="who ai">mind</span>
+          <span class="what">dreamtime: consolidated 3 threads, learned 1 hypothesis → desk</span>
+          <span style="font-size:11px;color:var(--ink-faint)">03:12</span></div>
+        <div class="journal-row"><span class="who ai">mind</span>
+          <span class="what">indexed 214 items (local)</span>
+          <span style="font-size:11px;color:var(--ink-faint)">02:40</span></div>
+        <p style="font-size:11.5px;color:var(--ink-faint);margin-top:10px">
+          Every entry expands to its evidence. Memory that can't cite the Journal is
+          invalid by rule — that's what keeps the Workbench honest.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="intent-zone">
+    <div class="presence"></div>
+    <div class="intent-bar">
+      <input placeholder='try: "what left this machine today?"'>
+      <span class="dial-mini">dial: <b id="dial-live">Balanced</b></span>
+    </div>
+  </div>
+</div>
+
+<script src="shell.js"></script>
+<script>
+  const notes = [
+    'Local-only. The queue holds 1 cloud-class request; it will state its reason and wait.',
+    'Overrides bind to items and entities: this folder never leaves · anything involving Mom asks first.',
+    'Escalation is liberal; the gate still redacts and irreversible actions still stop for you.'
+  ];
+  const names = ['Airgapped', 'Balanced', 'Cloud-boosted'];
+  function setDial(el, i) {
+    document.querySelectorAll('.dial-opt').forEach(o => o.classList.remove('on'));
+    el.classList.add('on');
+    document.getElementById('dial-note').textContent = notes[i];
+    document.getElementById('dial-live').textContent = names[i];
+  }
+</script>
+</body>
+</html>

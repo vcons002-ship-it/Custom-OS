@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Morph — the workbench</title>
+<link rel="stylesheet" href="shell.css">
+<style>
+  .desk { max-width: 640px; width: 100%; display: flex; flex-direction: column; gap: 14px; }
+  .hypo-actions { display: flex; gap: 8px; margin-top: 10px; }
+  .hypo-actions button { font-size: 11.5px; padding: 5px 13px; border-radius: 999px;
+    background: none; border: 1px solid var(--stroke); color: var(--ink-dim); cursor: pointer; }
+  .hypo-actions button:hover { color: var(--ink); border-color: var(--stroke-hi); }
+  .hypo-actions button.yes { color: var(--presence); border-color: var(--presence-dim); }
+  .dream li { font-size: 12.5px; color: var(--ink-dim); padding: 3px 0; list-style: none; }
+  .dream li::before { content: "· "; color: var(--presence); }
+</style>
+</head>
+<body>
+<nav class="mock-nav"><a href="index.html">← all screens</a><span>09 · the workbench</span></nav>
+<div class="mock-note">The AI's desk, open to you. Honesty rule: if it's shown here, it's
+actually conditioning predictions; delete it and it provably stops. Try confirming or
+correcting a hypothesis.</div>
+
+<div class="weave">
+  <div class="stage-zone" style="align-items:flex-start;padding-top:36px;overflow-y:auto">
+    <div class="desk">
+
+      <div class="panel materialize" style="display:flex;gap:12px;align-items:center">
+        <div class="presence"></div>
+        <p style="font-size:13.5px;color:var(--ink-dim)">This is what I'm thinking, and why.
+        Everything here cites the Journal. Correct me — corrections teach me more than
+        a hundred predictions.</p>
+      </div>
+
+      <div class="rail-title" style="padding-left:2px">hypotheses — awaiting your judgement</div>
+
+      <div class="rail-card question materialize d1">
+        <h4>You resize photos before sending them</h4>
+        <p>Observed 4 of the last 5 times. Should I just do it when you share?</p>
+        <span class="confidence" style="color:var(--curiosity);border-color:rgba(251,191,36,.35)">confidence 0.82 · asking, not assuming</span>
+        <button class="why-toggle">why?</button>
+        <div class="why">Journal: 12 Jun, 14 Jun (×2), 28 Jun — resize preceded send.
+          The exception (19 Jun) was a full-res send to a print shop.</div>
+        <div class="hypo-actions">
+          <button class="yes" onclick="settle(this,'Learned. I’ll resize on share — except to print services.')">yes, always</button>
+          <button onclick="settle(this,'Okay — I’ll keep asking each time.')">ask each time</button>
+          <button onclick="settle(this,'Deleted. This no longer conditions anything.')">wrong — delete it</button>
+        </div>
+      </div>
+
+      <div class="rail-card question materialize d2">
+        <h4>Tuesday evenings look like writing time</h4>
+        <p>Notes and drafts cluster there 3 weeks running. Want the Weave quieter then —
+           suggestions muted unless asked?</p>
+        <span class="confidence" style="color:var(--curiosity);border-color:rgba(251,191,36,.35)">confidence 0.64</span>
+        <div class="hypo-actions">
+          <button class="yes" onclick="settle(this,'Done — Tuesday evenings run quiet.')">yes, go quiet</button>
+          <button onclick="settle(this,'Understood — no pattern there after all.')">wrong — delete it</button>
+        </div>
+      </div>
+
+      <div class="panel materialize d3">
+        <h3>last night — dreamtime, 02:19–03:12</h3>
+        <ul class="dream">
+          <li>indexed 214 new items (7 photos, 1 invoice, 3 notes, 203 code files from the sync)</li>
+          <li>consolidated the Current: beach-trip thread archived to the graph, salience kept</li>
+          <li>self-critique: the "email the landlord" suggestion you dismissed twice — marked <em>never</em>; my priors on outbound-mail suggestions lowered</li>
+          <li>pre-warmed: photo curation tools (you review new shoots in the morning, 5 of 6 weeks)</li>
+          <li>discovered the two hypotheses above → filed here, not enacted</li>
+        </ul>
+      </div>
+
+      <div class="panel materialize d4">
+        <h3>drafts in progress</h3>
+        <div class="journal-row"><span class="who ai">mind</span>
+          <span class="what">best-of selection for the beach shoot — 6 candidates, awaiting your eye</span>
+          <button class="undo" onclick="location.href='08-delegation.html'">open</button></div>
+      </div>
+
+      <div class="panel materialize d5">
+        <h3>your controls</h3>
+        <p style="font-size:12.5px;color:var(--ink-dim)">
+          <b style="color:var(--ink)">forget this</b> — any entry, with its downstream re-weighted ·
+          <b style="color:var(--ink)">export the mind</b> — memory, graph, journal in an open format ·
+          <b style="color:var(--ink)">wipe the mind</b> — the machine forgets you; your files untouched.</p>
+      </div>
+
+    </div>
+  </div>
+
+  <aside class="rail">
+    <div class="rail-title">about this place</div>
+    <div class="rail-card materialize d2">
+      <h4>Why a visible desk?</h4>
+      <p>A mind you live with shouldn't think in a locked room. Reading my desk is how
+         you trust me; correcting it is how I earn it.</p>
+    </div>
+    <div class="rail-card materialize d3">
+      <h4>Nothing here self-opens</h4>
+      <p>The desk waits behind the presence dot. Questions spend attention budget like
+         any interruption — and quiet weeks refund it.</p>
+    </div>
+  </aside>
+
+  <div class="intent-zone">
+    <div class="presence asking"></div>
+    <div class="intent-bar">
+      <input placeholder='try: "what have you learned about me this week?"'>
+      <span class="dial-mini">dial: <b>Balanced</b> · desk is always local</span>
+    </div>
+  </div>
+</div>
+
+<script src="shell.js"></script>
+<script>
+  function settle(btn, msg) {
+    const card = btn.closest('.rail-card');
+    card.innerHTML = '<p style="color:var(--ink-dim)">' + msg + '</p>';
+    setTimeout(() => dissolveEl(card), 1600);
+  }
+</script>
+</body>
+</html>

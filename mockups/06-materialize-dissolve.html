@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Morph — materialize / dissolve</title>
+<link rel="stylesheet" href="shell.css">
+<style>
+  .demo { display: flex; flex-direction: column; align-items: center; gap: 34px; }
+  .lifecycle { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--ink-faint); }
+  .lifecycle b { color: var(--ink-dim); border: 1px solid var(--stroke); border-radius: 999px;
+                 padding: 4px 12px; font-weight: 500; }
+  .lifecycle b.lit { color: var(--presence); border-color: var(--presence-dim); }
+  .demo-stage { width: 340px; height: 210px; border-radius: 20px; background: var(--bg-2);
+                border: 1px solid var(--stroke); display: flex; align-items: center;
+                justify-content: center; color: var(--ink-faint); font-size: 13px;
+                box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+</style>
+</head>
+<body>
+<nav class="mock-nav"><a href="index.html">← all screens</a><span>06 · materialize / dissolve</span></nav>
+<div class="mock-note">The lifecycle from docs/06-hybrid-ai.md, played by hand.
+Surfaces hold no state — dissolving loses nothing, ever.</div>
+
+<div class="weave" style="grid-template-columns:1fr">
+  <div class="stage-zone">
+    <div class="demo">
+
+      <div class="lifecycle">
+        <b id="s0" class="lit">eligible</b> →
+        <b id="s1">selected</b> →
+        <b id="s2">materialized</b> →
+        <b id="s3">active</b> →
+        <b id="s4">dissolved</b>
+      </div>
+
+      <div style="position:relative">
+        <div class="halo top" id="demo-halo" style="top:-58px">
+          <button class="surface-chip hidden" id="c1"><span class="glyph">✦</span> Enhance</button>
+          <button class="surface-chip hidden" id="c2"><span class="glyph">◫</span> Crop</button>
+          <button class="surface-chip hidden" id="c3"><span class="glyph">➤</span> Share</button>
+        </div>
+        <div class="demo-stage">content, at rest on the Stage</div>
+      </div>
+
+      <div style="display:flex;gap:10px">
+        <button class="surface-chip" onclick="demoMaterialize()"><span class="glyph">＋</span> materialize the halo</button>
+        <button class="surface-chip" onclick="demoDissolve()"><span class="glyph">－</span> dissolve it</button>
+      </div>
+
+      <p style="max-width:460px;text-align:center;font-size:12.5px;color:var(--ink-dim)">
+        Materialize ≈ 250ms — slow enough to read as <em>forming</em>, fast enough to feel
+        immediate. Durable state was written to the Journal the moment it mattered, so
+        dissolve is pure disappearance.
+      </p>
+    </div>
+  </div>
+
+  <div class="intent-zone">
+    <div class="presence" id="demo-presence"></div>
+    <div class="intent-bar">
+      <input placeholder="nothing launches. nothing quits.">
+      <span class="dial-mini">demo</span>
+    </div>
+  </div>
+</div>
+
+<script src="shell.js"></script>
+<script>
+  function lite(n) {
+    for (let i = 0; i <= 4; i++) document.getElementById('s' + i).classList.toggle('lit', i === n);
+  }
+  function demoMaterialize() {
+    lite(1); presence('thinking');
+    setTimeout(() => { materialize('#c1, #c2, #c3'); lite(2); }, 220);
+    setTimeout(() => { lite(3); presence('idle'); }, 800);
+  }
+  function demoDissolve() {
+    dissolve('#c1, #c2, #c3'); lite(4);
+    setTimeout(() => lite(0), 900);
+  }
+</script>
+</body>
+</html>

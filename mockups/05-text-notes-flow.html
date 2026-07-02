@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Morph — notes flow</title>
+<link rel="stylesheet" href="shell.css">
+<style>
+  .note { padding: 26px 30px; font-size: 15px; color: #dbe2ef; }
+  .note h2 { font-size: 19px; margin-bottom: 12px; font-weight: 600; }
+  .note ul { list-style: none; }
+  .note li { padding: 5px 0; color: var(--ink-dim); }
+  .note li::before { content: "☐  "; color: var(--ink-faint); }
+  .note li.done { text-decoration: line-through; color: var(--ink-faint); }
+  .note li.done::before { content: "☑  "; color: var(--presence); }
+</style>
+</head>
+<body>
+<nav class="mock-nav"><a href="index.html">← all screens</a><span>05 · notes flow</span></nav>
+<div class="mock-note">A plain <code>.txt</code> — but the facets are semantic:
+<code>notes (0.95) · todo-list (0.81)</code>. That's why the tools are task tools,
+not just text tools.</div>
+
+<div class="weave">
+  <div class="stage-zone">
+
+    <div class="halo top">
+      <button class="surface-chip materialize d1"><span class="glyph">✎</span> Edit</button>
+      <button class="surface-chip cloud materialize d2"><span class="glyph">↺</span> Rewrite</button>
+      <button class="surface-chip materialize d3"><span class="glyph">≡</span> Summarize</button>
+      <button class="surface-chip materialize d4"><span class="glyph">⇥</span> Extract tasks</button>
+      <button class="surface-chip materialize d5"><span class="glyph">⛓</span> Link to project</button>
+    </div>
+
+    <figure class="stage materialize" style="max-width:min(560px,90%)">
+      <div class="note">
+        <h2>trip wrap-up</h2>
+        <ul>
+          <li class="done">back up the photos</li>
+          <li>pick the best shots for mom</li>
+          <li>book the cottage again for september</li>
+          <li>fix the sand out of the camera bag zipper</li>
+        </ul>
+      </div>
+      <figcaption class="stage-caption">trip-wrapup.txt · notes 0.95 · todo-list 0.81</figcaption>
+    </figure>
+  </div>
+
+  <aside class="rail">
+    <div class="rail-title">related</div>
+    <div class="rail-card materialize d1">
+      <h4>beach trip — thread</h4>
+      <p>7 photos · 1 note · the booking email from June.</p>
+      <button class="why-toggle">why?</button>
+      <div class="why">"cottage", "photos", and the entity <em>ent:event/beach-trip-jun26</em>
+      link this note into the thread already active in the Current.</div>
+    </div>
+    <div class="rail-title">next</div>
+    <div class="rail-card suggestion materialize d2">
+      <h4>Turn 3 open boxes into reminders?</h4>
+      <p>One has a natural date — "september" → cottage booking.</p>
+      <span class="confidence">confidence 0.71</span>
+      <div class="dismiss-row">
+        <button>yes</button>
+        <button onclick="askLesson(this)">dismiss…</button>
+      </div>
+    </div>
+    <div class="rail-card suggestion materialize d3">
+      <h4>"pick the best shots" — that's the photo task</h4>
+      <p>This item and the photo suggestion are the same intent. Open the shoot?</p>
+      <span class="confidence">confidence 0.66</span>
+      <button class="why-toggle">why?</button>
+      <div class="why">Cross-content: the todo text embeds within 0.1 of the pending
+      "send the best ones to Mom" suggestion in the photo thread.</div>
+      <div class="dismiss-row">
+        <button onclick="location.href='02-photo-flow.html'">open the shoot</button>
+        <button onclick="askLesson(this)">dismiss…</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="intent-zone">
+    <div class="presence"></div>
+    <div class="intent-bar">
+      <input placeholder='try: "remind me about the cottage in august"'>
+      <span class="dial-mini">dial: <b>Balanced</b> · all local</span>
+    </div>
+  </div>
+</div>
+<script src="shell.js"></script>
+</body>
+</html>

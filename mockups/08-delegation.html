@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Morph — delegation</title>
+<link rel="stylesheet" href="shell.css">
+<style>
+  .task { max-width: 620px; width: 100%; display: flex; flex-direction: column; gap: 12px; }
+  .step { display: flex; align-items: center; gap: 14px; padding: 13px 16px;
+          border-radius: 14px; border: 1px solid var(--stroke); background: var(--glass); }
+  .step .dot { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--ink-faint); flex: none; }
+  .step.done .dot { background: var(--presence); border-color: var(--presence);
+                    box-shadow: 0 0 10px var(--presence-dim); }
+  .step.live .dot { border-color: var(--presence); animation: breathe 1.1s infinite; }
+  .step .cap { margin-left: auto; font-size: 10.5px; color: var(--ink-faint);
+               font-family: ui-monospace, monospace; }
+  .step.gatewait { border-color: rgba(248,113,113,.35); }
+</style>
+</head>
+<body>
+<nav class="mock-nav"><a href="index.html">← all screens</a><span>08 · delegation</span></nav>
+<div class="mock-note">One tool substrate, two hands: the mind works the same Capabilities
+you would, visibly, journaled per step — and stops at the one-way door. Click <b>run it</b>.</div>
+
+<div class="weave">
+  <div class="stage-zone" style="flex-direction:column;gap:22px">
+
+    <div class="task">
+      <div class="panel materialize" style="display:flex;align-items:center;gap:12px">
+        <div class="presence thinking"></div>
+        <div>
+          <p style="font-size:14.5px;color:var(--ink)">"make a collage of the best beach photos and send it to Mom"</p>
+          <p style="font-size:11.5px;color:var(--ink-faint)" data-step-label
+             data-label1="planned — 4 steps, all tools you could open yourself"
+             data-label4="waiting at the irreversible step — everything staged for you">
+             intent understood · plan below</p>
+        </div>
+        <button class="surface-chip" style="margin-left:auto" onclick="runTask()" id="runbtn">
+          <span class="glyph">▶</span> run it</button>
+      </div>
+
+      <div class="step materialize d1" id="st1">
+        <div class="dot"></div>
+        <span>Select the 6 best — sharpness + faces + your past picks</span>
+        <span class="cap">cap.image.curate</span>
+      </div>
+      <div class="step materialize d2" id="st2">
+        <div class="dot"></div>
+        <span>Compose the collage — your usual grid layout</span>
+        <span class="cap">cap.image.collage</span>
+      </div>
+      <div class="step materialize d3" id="st3">
+        <div class="dot"></div>
+        <span>Draft the message — warm, short, like your last three to Mom</span>
+        <span class="cap">cap.msg.compose</span>
+      </div>
+      <div class="step materialize d4" id="st4">
+        <div class="dot"></div>
+        <span>Send to Mom <b style="color:var(--danger);font-size:11px;margin-left:6px">irreversible</b></span>
+        <span class="cap">cap.share.send</span>
+      </div>
+
+      <div class="gate-card irreversible hidden" id="gate">
+        <h4>One-way door — sending can't be undone</h4>
+        <p>Staged for you: the collage (6 photos, grid) and the message
+           <em>"best of the beach — miss you! ♥"</em> → <b>Mom</b>.
+           Everything up to here is in the Journal and undoable.</p>
+        <div class="gate-actions">
+          <button class="primary" onclick="confirmSend()">send it</button>
+          <button>edit the message</button>
+          <button class="danger" onclick="location.reload()">stop here</button>
+        </div>
+      </div>
+
+      <div class="panel hidden" id="sent">
+        <h3>done</h3>
+        <div class="journal-row"><span class="who ai">mind</span><span class="what">curated 6 of 7</span><button class="undo">undo</button></div>
+        <div class="journal-row"><span class="who ai">mind</span><span class="what">composed collage</span><button class="undo">undo</button></div>
+        <div class="journal-row"><span class="who ai">mind</span><span class="what">drafted message</span><button class="undo">undo</button></div>
+        <div class="journal-row"><span class="who ai">mind</span><span class="what">sent to Mom — consented 09:31</span><span class="locked">irreversible</span></div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="rail">
+    <div class="rail-title">while it works</div>
+    <div class="rail-card materialize d2">
+      <h4>You can take over anytime</h4>
+      <p>Each step is the same Surface you'd use by hand — grab the controls mid-flight
+         and the mind steps back.</p>
+    </div>
+    <div class="rail-card materialize d3">
+      <h4>Journaled per step</h4>
+      <p>Undo unwinds to any point before the one-way door.</p>
+    </div>
+  </aside>
+
+  <div class="intent-zone">
+    <div class="presence" id="p"></div>
+    <div class="intent-bar">
+      <input placeholder="delegation is just the intent bar, trusted further">
+      <span class="dial-mini">dial: <b>Balanced</b> · compose → cloud (redacted)</span>
+    </div>
+  </div>
+</div>
+
+<script src="shell.js"></script>
+<script>
+  function runTask() {
+    document.getElementById('runbtn').classList.add('hidden');
+    goToStep(1); presence('thinking');
+    const seq = ['st1', 'st2', 'st3'];
+    seq.forEach((id, i) => {
+      setTimeout(() => document.getElementById(id).classList.add('live'), i * 900 + 200);
+      setTimeout(() => {
+        document.getElementById(id).classList.remove('live');
+        document.getElementById(id).classList.add('done');
+      }, i * 900 + 1000);
+    });
+    setTimeout(() => {
+      document.getElementById('st4').classList.add('gatewait');
+      materializeEl(document.getElementById('gate'));
+      goToStep(4); presence('asking');
+    }, 3100);
+  }
+  function confirmSend() {
+    document.getElementById('st4').classList.remove('gatewait');
+    document.getElementById('st4').classList.add('done');
+    dissolveEl(document.getElementById('gate'));
+    materializeEl(document.getElementById('sent'));
+    presence('idle');
+  }
+</script>
+</body>
+</html>

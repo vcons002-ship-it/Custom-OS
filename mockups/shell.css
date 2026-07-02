@@ -1,0 +1,359 @@
+/* ================================================================
+   Morph — the Weave shell styling (shared by all mockup screens)
+   Self-contained: system fonts only, no external assets.
+   ================================================================ */
+
+:root {
+  --bg-0: #07090f;
+  --bg-1: #0b0e17;
+  --bg-2: #10141f;
+  --ink: #e8ecf4;
+  --ink-dim: #9aa3b5;
+  --ink-faint: #5b6478;
+  --presence: #5eead4;        /* the mind: teal glow */
+  --presence-dim: rgba(94, 234, 212, .35);
+  --foresight: #a78bfa;       /* prediction: violet */
+  --curiosity: #fbbf24;       /* questions: amber */
+  --danger: #f87171;
+  --cloud: #7dd3fc;           /* cloud escalation: sky */
+  --glass: rgba(255, 255, 255, .045);
+  --glass-hi: rgba(255, 255, 255, .08);
+  --stroke: rgba(255, 255, 255, .09);
+  --stroke-hi: rgba(255, 255, 255, .16);
+  --radius: 18px;
+  --ease-form: cubic-bezier(.22, 1.2, .36, 1);
+  --ease-fade: cubic-bezier(.4, 0, .2, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  background:
+    radial-gradient(1200px 800px at 70% -10%, rgba(94, 234, 212, .06), transparent 60%),
+    radial-gradient(1000px 700px at 10% 110%, rgba(167, 139, 250, .05), transparent 60%),
+    linear-gradient(180deg, var(--bg-1), var(--bg-0));
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- the canvas & zones ---------- */
+
+.weave {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  grid-template-rows: 1fr auto;
+  gap: 20px;
+  height: 100vh;
+  padding: 26px;
+}
+
+.stage-zone {
+  grid-column: 1; grid-row: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+}
+
+.rail {
+  grid-column: 2; grid-row: 1 / span 2;
+  display: flex; flex-direction: column; gap: 14px;
+  overflow-y: auto;
+  padding: 4px 2px;
+  margin-top: 76px;   /* clear the fixed mockup note */
+}
+
+.intent-zone {
+  grid-column: 1; grid-row: 2;
+  display: flex; align-items: center; gap: 16px;
+  justify-content: center;
+}
+
+/* ---------- the stage ---------- */
+
+.stage {
+  position: relative;
+  max-width: min(680px, 90%);
+  border-radius: calc(var(--radius) + 6px);
+  background: var(--bg-2);
+  border: 1px solid var(--stroke);
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, .55),
+    0 0 0 1px rgba(0, 0, 0, .3),
+    0 0 90px -30px var(--presence-dim);
+  overflow: hidden;
+}
+
+.stage-caption {
+  position: absolute; left: 18px; bottom: 14px;
+  font-size: 12.5px; color: var(--ink-dim);
+  background: rgba(7, 9, 15, .6);
+  backdrop-filter: blur(8px);
+  padding: 5px 12px; border-radius: 999px;
+  border: 1px solid var(--stroke);
+}
+
+/* ---------- the tool halo ---------- */
+
+.halo {
+  position: absolute;
+  display: flex; gap: 10px;
+  z-index: 5;
+}
+.halo.top    { top: 6%;  left: 50%; transform: translateX(-50%); }
+.halo.left   { left: 2%;  top: 50%; transform: translateY(-50%); flex-direction: column; }
+.halo.bottom { bottom: 12%; left: 50%; transform: translateX(-50%); }
+
+.surface-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: var(--glass);
+  border: 1px solid var(--stroke);
+  backdrop-filter: blur(14px);
+  color: var(--ink);
+  font-size: 13.5px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color .2s var(--ease-fade), background .2s var(--ease-fade),
+              transform .2s var(--ease-fade);
+}
+.surface-chip:hover {
+  border-color: var(--presence-dim);
+  background: var(--glass-hi);
+  transform: translateY(-1px);
+}
+.surface-chip .glyph { font-size: 15px; opacity: .9; }
+.surface-chip.cloud::after {
+  content: "cloud"; font-size: 10px; letter-spacing: .06em;
+  color: var(--cloud); border: 1px solid rgba(125, 211, 252, .35);
+  border-radius: 999px; padding: 1px 7px; margin-left: 2px;
+}
+
+/* ---------- materialize / dissolve ---------- */
+
+.materialize {
+  animation: materialize .5s var(--ease-form) both;
+}
+.materialize.d1 { animation-delay: .08s; }
+.materialize.d2 { animation-delay: .16s; }
+.materialize.d3 { animation-delay: .24s; }
+.materialize.d4 { animation-delay: .32s; }
+.materialize.d5 { animation-delay: .40s; }
+
+@keyframes materialize {
+  from { opacity: 0; transform: scale(.88) translateY(8px); filter: blur(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0);     filter: blur(0); }
+}
+
+.dissolving {
+  animation: dissolve .35s var(--ease-fade) both;
+  pointer-events: none;
+}
+@keyframes dissolve {
+  to { opacity: 0; transform: scale(.92); filter: blur(8px); }
+}
+
+.hidden { display: none !important; }
+
+/* ---------- the foresight rail ---------- */
+
+.rail-title {
+  font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink-faint); padding: 4px 6px 0;
+}
+
+.rail-card {
+  border-radius: var(--radius);
+  background: var(--glass);
+  border: 1px solid var(--stroke);
+  backdrop-filter: blur(14px);
+  padding: 14px;
+  cursor: pointer;
+  transition: border-color .2s var(--ease-fade), background .2s var(--ease-fade);
+}
+.rail-card:hover { border-color: var(--stroke-hi); background: var(--glass-hi); }
+
+.rail-card.suggestion { border-left: 3px solid var(--foresight); }
+.rail-card.question   { border-left: 3px solid var(--curiosity); }
+
+.rail-card h4 { font-size: 13.5px; font-weight: 600; margin-bottom: 3px; }
+.rail-card p  { font-size: 12.5px; color: var(--ink-dim); }
+
+.confidence {
+  display: inline-block; font-size: 10.5px; color: var(--foresight);
+  border: 1px solid rgba(167, 139, 250, .35); border-radius: 999px;
+  padding: 1px 8px; margin-top: 8px;
+}
+
+.why {
+  margin-top: 9px; font-size: 12px; color: var(--ink-dim);
+  border-top: 1px dashed var(--stroke); padding-top: 8px;
+  display: none;
+}
+.rail-card.open .why { display: block; }
+.why-toggle {
+  font-size: 11px; color: var(--ink-faint); margin-top: 8px;
+  background: none; border: none; cursor: pointer; padding: 0;
+}
+.why-toggle:hover { color: var(--ink-dim); }
+
+.dismiss-row { display: flex; gap: 6px; margin-top: 10px; }
+.dismiss-row button {
+  font-size: 11px; padding: 4px 10px; border-radius: 999px;
+  background: none; border: 1px solid var(--stroke); color: var(--ink-dim);
+  cursor: pointer;
+}
+.dismiss-row button:hover { border-color: var(--stroke-hi); color: var(--ink); }
+
+/* related-content thumbnails */
+.thumb-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.thumb-grid svg { width: 100%; height: auto; border-radius: 10px; display: block;
+                  border: 1px solid var(--stroke); cursor: pointer; }
+.thumb-grid svg:hover { border-color: var(--presence-dim); }
+
+/* ---------- the intent bar & presence ---------- */
+
+.presence {
+  position: relative; width: 14px; height: 14px; flex: none;
+}
+.presence::before {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  background: var(--presence);
+  box-shadow: 0 0 18px 2px var(--presence-dim);
+  animation: breathe 3.2s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(.82); opacity: .75; }
+  50%      { transform: scale(1.08); opacity: 1; }
+}
+.presence.thinking::before { animation-duration: 1.1s; }
+.presence.asking::before   { background: var(--curiosity);
+                             box-shadow: 0 0 18px 2px rgba(251, 191, 36, .4); }
+.presence.dreaming::before { animation-duration: 6s; opacity: .5; }
+
+.intent-bar {
+  display: flex; align-items: center; gap: 12px;
+  width: min(560px, 70%);
+  padding: 13px 20px;
+  border-radius: 999px;
+  background: var(--glass);
+  border: 1px solid var(--stroke);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, .35);
+}
+.intent-bar input {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--ink); font-size: 14.5px; font-family: inherit;
+}
+.intent-bar input::placeholder { color: var(--ink-faint); }
+
+.dial-mini {
+  font-size: 10.5px; letter-spacing: .05em; color: var(--ink-faint);
+  border: 1px solid var(--stroke); border-radius: 999px; padding: 3px 10px;
+  white-space: nowrap;
+}
+.dial-mini b { color: var(--presence); font-weight: 600; }
+
+/* ---------- consent / gate cards ---------- */
+
+.gate-card {
+  border-radius: var(--radius);
+  border: 1px solid rgba(125, 211, 252, .3);
+  background: rgba(125, 211, 252, .05);
+  padding: 16px;
+}
+.gate-card.irreversible {
+  border-color: rgba(248, 113, 113, .35);
+  background: rgba(248, 113, 113, .05);
+}
+.gate-card h4 { font-size: 13.5px; margin-bottom: 6px; }
+.gate-card p  { font-size: 12.5px; color: var(--ink-dim); }
+.gate-card .redaction { color: var(--cloud); font-family: ui-monospace, monospace; font-size: 12px; }
+.gate-actions { display: flex; gap: 8px; margin-top: 12px; }
+.gate-actions button {
+  font-size: 12.5px; padding: 7px 16px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--stroke); background: var(--glass); color: var(--ink);
+}
+.gate-actions button.primary { border-color: var(--presence-dim); color: var(--presence); }
+.gate-actions button.danger  { border-color: rgba(248,113,113,.4); color: var(--danger); }
+
+/* ---------- generic panels, journal, misc ---------- */
+
+.panel {
+  border-radius: var(--radius);
+  background: var(--glass);
+  border: 1px solid var(--stroke);
+  backdrop-filter: blur(14px);
+  padding: 16px;
+}
+.panel h3 { font-size: 13px; letter-spacing: .1em; text-transform: uppercase;
+            color: var(--ink-faint); margin-bottom: 10px; font-weight: 600; }
+
+.journal-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 4px; border-bottom: 1px solid var(--stroke);
+  font-size: 13px;
+}
+.journal-row:last-child { border-bottom: none; }
+.journal-row .who { font-size: 10.5px; padding: 2px 8px; border-radius: 999px;
+                    border: 1px solid var(--stroke); color: var(--ink-dim); flex: none; }
+.journal-row .who.ai { color: var(--presence); border-color: var(--presence-dim); }
+.journal-row .what { flex: 1; color: var(--ink); }
+.journal-row .undo { font-size: 11.5px; color: var(--ink-dim); background: none;
+                     border: 1px solid var(--stroke); border-radius: 999px;
+                     padding: 3px 12px; cursor: pointer; flex: none; }
+.journal-row .undo:hover { color: var(--ink); border-color: var(--stroke-hi); }
+.journal-row .locked { font-size: 11px; color: var(--danger); flex: none; }
+
+/* ---------- mockup chrome (not part of the OS) ---------- */
+
+.mock-nav {
+  position: fixed; top: 14px; left: 16px; z-index: 50;
+  display: flex; gap: 10px; align-items: center;
+  font-size: 12px; color: var(--ink-faint);
+}
+.mock-nav a { color: var(--ink-dim); text-decoration: none;
+              border: 1px solid var(--stroke); border-radius: 999px; padding: 4px 12px; }
+.mock-nav a:hover { color: var(--ink); border-color: var(--stroke-hi); }
+.mock-note {
+  position: fixed; top: 14px; right: 16px; z-index: 50;
+  font-size: 11.5px; color: var(--ink-faint); max-width: 300px; text-align: right;
+}
+
+/* ---------- launcher (index.html) ---------- */
+
+.launcher {
+  height: 100vh; overflow-y: auto; padding: 60px 24px;
+  display: flex; flex-direction: column; align-items: center;
+}
+.launcher header { text-align: center; max-width: 640px; margin-bottom: 40px; }
+.launcher h1 { font-size: 30px; font-weight: 650; letter-spacing: -.02em; }
+.launcher h1 span { color: var(--presence); }
+.launcher header p { color: var(--ink-dim); margin-top: 10px; font-size: 15px; }
+
+.screen-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 14px; width: min(1080px, 100%);
+}
+.screen-card {
+  display: block; text-decoration: none; color: var(--ink);
+  border-radius: var(--radius); border: 1px solid var(--stroke);
+  background: var(--glass); padding: 18px;
+  transition: border-color .2s, background .2s, transform .2s;
+}
+.screen-card:hover { border-color: var(--presence-dim); background: var(--glass-hi);
+                     transform: translateY(-2px); }
+.screen-card .num { font-size: 11px; color: var(--ink-faint); letter-spacing: .12em; }
+.screen-card h3 { font-size: 15.5px; margin: 6px 0 4px; font-weight: 600; }
+.screen-card p { font-size: 12.5px; color: var(--ink-dim); }
+
+.legend { width: min(1080px, 100%); margin-top: 36px; }
