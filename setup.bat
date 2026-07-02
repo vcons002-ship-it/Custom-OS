@@ -104,7 +104,7 @@ echo       ^(installs packages, Rust, QEMU, Buildroot + verifies the
 echo        dev loop - a few minutes on first run^) ...
 echo.
 
-wsl -d %DISTRO% --cd "%~dp0." -- bash -lc "set -e; mkdir -p $HOME/clade/Custom-OS; cp -a . $HOME/clade/Custom-OS/; cd $HOME/clade/Custom-OS; exec bash tools/setup.sh"
+wsl -d %DISTRO% --cd "%~dp0." -- bash -lc "set -e; mkdir -p $HOME/clade/Custom-OS; cp -a . $HOME/clade/Custom-OS/; cd $HOME/clade/Custom-OS; sed -i 's/\r$//' tools/*.sh kernel/buildroot-external/board/clade/*.sh; exec bash tools/setup.sh"
 
 if errorlevel 1 (
     echo.
