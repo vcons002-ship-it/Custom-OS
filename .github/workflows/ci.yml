@@ -28,7 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Fetch Buildroot
-        run: git clone --depth 1 --branch 2024.02.x https://gitlab.com/buildroot.org/buildroot.git ../buildroot
+        run: git clone --depth 1 --branch 2025.02.x https://gitlab.com/buildroot.org/buildroot.git ../buildroot
       - name: Build image
         run: |
           cd ../buildroot
