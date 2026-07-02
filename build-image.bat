@@ -24,7 +24,7 @@ echo   [*] Building the Clade OS image. First build takes 30-60 minutes;
 echo       leave this window open. Re-running resumes if interrupted.
 echo.
 
-wsl -d %DISTRO% --cd "%~dp0." -- bash -lc "set -e; if [ -e $HOME/clade ] && [ ! -O $HOME/clade ]; then echo '[fix] taking ownership of ~/clade'; chown -R $USER: $HOME/clade 2>/dev/null || sudo chown -R $USER: $HOME/clade; fi; if [ -f ./Cargo.toml ]; then mkdir -p $HOME/clade/Custom-OS; cp -a . $HOME/clade/Custom-OS/; fi; cd $HOME/clade/Custom-OS; sed -i 's/\r$//' tools/*.sh kernel/buildroot-external/board/clade/*.sh; cd $HOME/clade/buildroot 2>/dev/null || { echo '  [!] Buildroot not found - run install-deps.bat first'; exit 1; }; make BR2_EXTERNAL=$HOME/clade/Custom-OS/kernel/buildroot-external clade_x86_64_defconfig; exec make"
+wsl -d %DISTRO% --cd "%~dp0." -- bash -lc "set -e; if [ -e $HOME/clade ] && [ ! -O $HOME/clade ]; then echo '[fix] taking ownership of ~/clade'; chown -R $USER: $HOME/clade 2>/dev/null || sudo chown -R $USER: $HOME/clade; fi; if [ -f ./Cargo.toml ]; then mkdir -p $HOME/clade/Custom-OS; cp -af . $HOME/clade/Custom-OS/; fi; cd $HOME/clade/Custom-OS; sed -i 's/\r$//' tools/*.sh kernel/buildroot-external/board/clade/*.sh; cd $HOME/clade/buildroot 2>/dev/null || { echo '  [!] Buildroot not found - run install-deps.bat first'; exit 1; }; make BR2_EXTERNAL=$HOME/clade/Custom-OS/kernel/buildroot-external clade_x86_64_defconfig; exec make"
 
 if errorlevel 1 (
     echo.

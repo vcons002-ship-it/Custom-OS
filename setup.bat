@@ -104,7 +104,7 @@ echo       ^(installs packages, Rust, QEMU, Buildroot + verifies the
 echo        dev loop - a few minutes on first run^) ...
 echo.
 
-wsl -d %DISTRO% --cd "%~dp0." -- bash -lc "set -e; if [ -e $HOME/clade ] && [ ! -O $HOME/clade ]; then echo '[fix] ~/clade was created by root in an earlier run - taking ownership'; chown -R $USER: $HOME/clade 2>/dev/null || sudo chown -R $USER: $HOME/clade; fi; if [ -e $HOME/clade/Custom-OS ] && [ ! -O $HOME/clade/Custom-OS ]; then echo '[fix] taking ownership of the WSL repo copy'; chown -R $USER: $HOME/clade 2>/dev/null || sudo chown -R $USER: $HOME/clade; fi; mkdir -p $HOME/clade/Custom-OS; cp -a . $HOME/clade/Custom-OS/; cd $HOME/clade/Custom-OS; sed -i 's/\r$//' tools/*.sh kernel/buildroot-external/board/clade/*.sh; exec bash tools/setup.sh"
+wsl -d %DISTRO% --cd "%~dp0." -- bash -lc "set -e; if [ -e $HOME/clade ] && [ ! -O $HOME/clade ]; then echo '[fix] ~/clade was created by root in an earlier run - taking ownership'; chown -R $USER: $HOME/clade 2>/dev/null || sudo chown -R $USER: $HOME/clade; fi; if [ -e $HOME/clade/Custom-OS ] && [ ! -O $HOME/clade/Custom-OS ]; then echo '[fix] taking ownership of the WSL repo copy'; chown -R $USER: $HOME/clade 2>/dev/null || sudo chown -R $USER: $HOME/clade; fi; mkdir -p $HOME/clade/Custom-OS; cp -af . $HOME/clade/Custom-OS/; cd $HOME/clade/Custom-OS; sed -i 's/\r$//' tools/*.sh kernel/buildroot-external/board/clade/*.sh; exec bash tools/setup.sh"
 
 if errorlevel 1 (
     echo.
