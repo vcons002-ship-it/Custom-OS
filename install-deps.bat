@@ -25,7 +25,7 @@ rem --cd starts bash inside THIS folder via WSL's automount - no path
 rem conversion, no command substitution, no escaped quotes to mangle.
 rem The checkout is synced into the fast WSL-side copy on every run (so a
 rem git pull on Windows is always picked up), then the installer runs there.
-wsl -d %DISTRO% --cd "%~dp0." -- bash -lc "set -e; if [ -e $HOME/clade ] && [ ! -O $HOME/clade ]; then echo '[fix] ~/clade was created by root in an earlier run - taking ownership'; chown -R $USER: $HOME/clade 2>/dev/null || sudo chown -R $USER: $HOME/clade; fi; if [ -e $HOME/clade/Custom-OS ] && [ ! -O $HOME/clade/Custom-OS ]; then echo '[fix] taking ownership of the WSL repo copy'; chown -R $USER: $HOME/clade 2>/dev/null || sudo chown -R $USER: $HOME/clade; fi; echo '[install-deps] syncing repo into WSL filesystem...'; mkdir -p $HOME/clade/Custom-OS; cp -af . $HOME/clade/Custom-OS/; cd $HOME/clade/Custom-OS; sed -i 's/\r$//' tools/*.sh kernel/buildroot-external/board/clade/*.sh; exec bash tools/setup.sh"
+wsl -d %DISTRO% --cd "%~dp0." -- bash -lc "set -e; if [ -e $HOME/clade ] && [ ! -O $HOME/clade ]; then echo '[fix] ~/clade was created by root in an earlier run - taking ownership'; chown -R $USER: $HOME/clade 2>/dev/null || sudo chown -R $USER: $HOME/clade; fi; if [ -e $HOME/clade/Custom-OS ] && [ ! -O $HOME/clade/Custom-OS ]; then echo '[fix] taking ownership of the WSL repo copy'; chown -R $USER: $HOME/clade 2>/dev/null || sudo chown -R $USER: $HOME/clade; fi; echo '[install-deps] syncing repo into WSL filesystem...'; mkdir -p $HOME/clade/Custom-OS; cp -af . $HOME/clade/Custom-OS/; cd $HOME/clade/Custom-OS; grep -rIl $'\r' --exclude-dir=.git --exclude=*.bat . | xargs -r sed -i 's/\r$//'; exec bash tools/setup.sh"
 
 if errorlevel 1 (
     echo.
