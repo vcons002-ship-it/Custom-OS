@@ -1,7 +1,7 @@
 @echo off
 setlocal
 rem ============================================================
-rem  Clade — install/refresh the Linux-side dependencies only.
+rem  Clade - install/refresh the Linux-side dependencies only.
 rem
 rem  Runs tools/setup.sh inside WSL2 (packages, Rust, QEMU,
 rem  Buildroot + dev-loop verification). Assumes WSL2/Ubuntu is
@@ -25,7 +25,7 @@ rem --cd starts bash inside THIS folder via WSL's automount - no path
 rem conversion, no command substitution, no escaped quotes to mangle.
 rem The checkout is synced into the fast WSL-side copy on every run (so a
 rem git pull on Windows is always picked up), then the installer runs there.
-wsl -d %DISTRO% --cd "%~dp0" -- bash -lc "set -e; echo '[install-deps] syncing repo into WSL filesystem...'; mkdir -p $HOME/clade/Custom-OS; cp -a . $HOME/clade/Custom-OS/; cd $HOME/clade/Custom-OS; exec bash tools/setup.sh"
+wsl -d %DISTRO% --cd "%~dp0." -- bash -lc "set -e; echo '[install-deps] syncing repo into WSL filesystem...'; mkdir -p $HOME/clade/Custom-OS; cp -a . $HOME/clade/Custom-OS/; cd $HOME/clade/Custom-OS; exec bash tools/setup.sh"
 
 if errorlevel 1 (
     echo.
