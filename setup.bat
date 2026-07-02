@@ -1,7 +1,7 @@
 @echo off
 setlocal EnableDelayedExpansion
 rem ============================================================
-rem  Clade — Windows 11 setup
+rem  Clade - Windows 11 setup
 rem
 rem  Bootstraps WSL2 (Ubuntu 24.04), enables nested virtualization
 rem  so QEMU gets KVM, clones the repo INSIDE the WSL filesystem
@@ -104,7 +104,7 @@ echo       ^(installs packages, Rust, QEMU, Buildroot + verifies the
 echo        dev loop - a few minutes on first run^) ...
 echo.
 
-wsl -d %DISTRO% --cd "%~dp0" -- bash -lc "set -e; mkdir -p $HOME/clade/Custom-OS; cp -a . $HOME/clade/Custom-OS/; cd $HOME/clade/Custom-OS; exec bash tools/setup.sh"
+wsl -d %DISTRO% --cd "%~dp0." -- bash -lc "set -e; mkdir -p $HOME/clade/Custom-OS; cp -a . $HOME/clade/Custom-OS/; cd $HOME/clade/Custom-OS; exec bash tools/setup.sh"
 
 if errorlevel 1 (
     echo.

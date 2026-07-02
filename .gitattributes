@@ -1,0 +1,2 @@
+# cmd.exe requires CRLF in batch files regardless of the committer's platform.
+*.bat text eol=crlf
