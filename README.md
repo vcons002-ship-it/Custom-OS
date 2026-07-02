@@ -53,10 +53,12 @@ screen demonstrates one path through the morphing UI described in
 |---|---|
 | `setup.bat` | First-time setup (run as Administrator once): installs WSL2 + Ubuntu with nested virtualization (so QEMU gets KVM), copies the repo into WSL, and runs the Linux installer. A reboot may be needed once; re-run after and it resumes. |
 | `install-deps.bat` | Syncs the checkout into WSL and re-runs the Linux dependency installer (`tools/setup.sh`). Run after pulls that change dependencies — it's idempotent, so when in doubt, run it. |
+| `build-image.bat` | Builds the bootable Clade OS image (Buildroot). First build ~30–60 min, then cached; safe to interrupt and resume. Run once, and again whenever the OS recipe (`kernel/`) changes. |
 | `run.bat` | Starts Clade: syncs the checkout into WSL, then boots the real OS image in QEMU if built, otherwise starts the dev harness and prints the image-build command. `run.bat dev` forces the harness; `run.bat headless` boots without a display window. |
 
-Day-to-day order: **`setup.bat` once ever** → **`run.bat` every time** (it picks up
-`git pull` automatically). `install-deps.bat` only when dependencies change.
+Day-to-day order: **`setup.bat` once ever** → **`build-image.bat` once** →
+**`run.bat` every time** (it picks up `git pull` automatically). `install-deps.bat`
+only when dependencies change; `build-image.bat` again only when `kernel/` changes.
 
 **Linux** — `tools/setup.sh` to set up, `tools/qemu-run.sh <images-dir>` to boot,
 `tools/dev-run.sh` for the harness.
