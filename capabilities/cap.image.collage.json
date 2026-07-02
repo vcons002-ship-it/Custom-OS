@@ -1,0 +1,19 @@
+{
+  "id": "cap.image.collage",
+  "version": "0.1.0",
+  "appliesTo": [{ "facet": "image", "min": 0.7, "count": ">=2" }],
+  "intentTriggers": ["combine images", "collage", "montage"],
+  "contract": {
+    "inputs": { "items": "sub:item[]", "layout": "enum?" },
+    "outputs": { "result": "sub:item" },
+    "tools": [
+      { "name": "compose_grid", "bind": "worker:image-compose" },
+      { "name": "suggest_layout", "bind": "reasoning" }
+    ],
+    "reasoning": "prompt-template:collage-layout"
+  },
+  "surface": { "form": "halo-panel", "controls": ["layout-picker", "spacing", "accept"], "stage": "preview-overlay" },
+  "permissions": ["read:selected-items", "write:substrate"],
+  "memoryKeys": ["layout-preference"],
+  "reversibility": "undoable"
+}

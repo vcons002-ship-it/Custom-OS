@@ -1,0 +1,19 @@
+{
+  "id": "cap.share.send",
+  "version": "0.1.0",
+  "appliesTo": [{ "facet": "*", "min": 0.5, "count": ">=1" }],
+  "intentTriggers": ["send", "share", "email to"],
+  "contract": {
+    "inputs": { "items": "sub:item[]", "recipient": "entity" },
+    "outputs": {},
+    "tools": [
+      { "name": "stage_message", "bind": "reasoning" },
+      { "name": "send", "bind": "worker:share-send-stub" }
+    ],
+    "reasoning": "prompt-template:compose-message"
+  },
+  "surface": { "form": "halo-panel", "controls": ["recipient", "message", "confirm-send"], "stage": "compose-overlay" },
+  "permissions": ["read:selected-items", "net:send"],
+  "memoryKeys": ["frequent-recipients"],
+  "reversibility": "gated-irreversible"
+}

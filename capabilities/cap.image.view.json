@@ -1,0 +1,15 @@
+{
+  "id": "cap.image.view",
+  "version": "0.1.0",
+  "appliesTo": [{ "facet": "image", "min": 0.5, "count": ">=1" }],
+  "intentTriggers": ["view", "look at", "open"],
+  "contract": {
+    "inputs": { "items": "sub:item[]" },
+    "outputs": {},
+    "tools": [{ "name": "render_image", "bind": "worker:image-render" }]
+  },
+  "surface": { "form": "stage", "controls": ["zoom", "pan"], "stage": "primary" },
+  "permissions": ["read:selected-items"],
+  "memoryKeys": [],
+  "reversibility": "undoable"
+}

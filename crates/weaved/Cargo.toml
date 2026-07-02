@@ -1,0 +1,11 @@
+[package]
+name = "weaved"
+description = "Clade's init (PID 1): reaper, service supervisor, and event bus host"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+clade-proto = { workspace = true }
+anyhow = { workspace = true }
+libc = { workspace = true }
