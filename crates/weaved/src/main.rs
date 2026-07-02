@@ -14,26 +14,44 @@ mod supervisor;
 
 use std::path::Path;
 
+// ASCII only: the framebuffer console's default font renders box-drawing
+// glyphs as garbage.
 const BANNER: &str = r#"
-   ╭──────────────────────────────────────────────╮
-   │                                              │
-   │      C L A D E                               │
-   │      the living computer                     │
-   │                                              │
-   │      kernel: hardware only — everything      │
-   │      above this line is ours.                │
-   │                                              │
-   ╰──────────────────────────────────────────────╯
+   +----------------------------------------------+
+   |                                              |
+   |      C L A D E                               |
+   |      the living computer                     |
+   |                                              |
+   |      kernel: hardware only - everything      |
+   |      above this line is ours.                |
+   |                                              |
+   +----------------------------------------------+
 "#;
 
-fn main() -> anyhow::Result<()> {
+fn main() {
     let is_pid1 = std::process::id() == 1;
+    if let Err(e) = run(is_pid1) {
+        log("weaved", &format!("fatal: {e}"));
+        if is_pid1 {
+            // PID 1 must never exit — the kernel panics and the error
+            // scrolls away. Hold the machine so the message stays readable.
+            loop {
+                std::thread::sleep(std::time::Duration::from_secs(3600));
+            }
+        }
+        std::process::exit(1);
+    }
+}
 
+fn run(is_pid1: bool) -> anyhow::Result<()> {
     // Dying takes the whole mind plane with us — proper init behavior in the
     // image, and no orphaned services when the dev harness is Ctrl-C'd/killed.
     install_shutdown_handler();
 
     if is_pid1 {
+        // The kernel gives init an empty-ish environment; anything we or a
+        // Capability worker exec later deserves a sane PATH.
+        std::env::set_var("PATH", "/usr/sbin:/usr/bin:/sbin:/bin");
         mount_pseudo_filesystems();
         mount_data_volume();
         // Orphans reparent to us; reap them so nothing zombies.
@@ -55,8 +73,10 @@ fn main() -> anyhow::Result<()> {
         supervisor.launch(service);
     }
 
-    // M0's definition of ready: every service has announced itself once.
-    supervisor.await_all_up();
+    // M0's definition of ready: every service has spawned. Bounded — a
+    // missing/crash-looping service must not wedge the machine before
+    // weave-ready; we proceed and the supervisor keeps retrying.
+    supervisor.await_all_up(std::time::Duration::from_secs(30));
     bus.handle().broadcast(&clade_proto::Event::WeaveReady)?;
     log(
         "weaved",
@@ -152,6 +172,14 @@ fn install_shutdown_handler() {
                 unsafe { libc::kill(pid, libc::SIGTERM) };
             }
         }
+        // PID 1 must never exit — the kernel panics ("attempted to kill
+        // init"). Power the machine off properly instead.
+        if std::process::id() == 1 {
+            unsafe {
+                libc::sync();
+                libc::reboot(libc::LINUX_REBOOT_CMD_POWER_OFF);
+            }
+        }
         unsafe { libc::_exit(0) };
     }
     unsafe {
@@ -163,14 +191,35 @@ fn install_shutdown_handler() {
     }
 }
 
-/// Reap any child that reparents to PID 1, forever, on a dedicated thread.
-/// (The supervisor waits on its own direct children; this catches orphans.)
+/// Reap orphans that reparent to PID 1, forever, on a dedicated thread —
+/// WITHOUT stealing the supervisor's children: a blind waitpid(-1) would race
+/// the supervisor's Child::wait() and eat its exit statuses. waitid+WNOWAIT
+/// peeks without reaping; only non-supervised PIDs are actually collected.
 fn spawn_reaper() {
     std::thread::spawn(|| loop {
-        let mut status = 0;
-        let pid = unsafe { libc::waitpid(-1, &mut status, 0) };
-        if pid <= 0 {
-            std::thread::sleep(std::time::Duration::from_millis(200));
+        unsafe {
+            let mut info: libc::siginfo_t = std::mem::zeroed();
+            let rc = libc::waitid(libc::P_ALL, 0, &mut info, libc::WEXITED | libc::WNOWAIT);
+            if rc != 0 {
+                // No children at all right now.
+                std::thread::sleep(std::time::Duration::from_millis(200));
+                continue;
+            }
+            let pid = info.si_pid();
+            if pid <= 0 {
+                std::thread::sleep(std::time::Duration::from_millis(200));
+                continue;
+            }
+            let supervised = supervisor::CHILD_PIDS
+                .iter()
+                .any(|s| s.load(std::sync::atomic::Ordering::SeqCst) == pid);
+            if supervised {
+                // The supervisor's Child::wait() will reap it; don't spin on
+                // the same zombie in the meantime.
+                std::thread::sleep(std::time::Duration::from_millis(100));
+            } else {
+                libc::waitpid(pid, std::ptr::null_mut(), 0);
+            }
         }
     });
 }

@@ -28,7 +28,7 @@ command -v apt-get >/dev/null || die "this script supports apt-based distros (Ub
 export DEBIAN_FRONTEND=noninteractive
 $SUDO apt-get update -qq
 $SUDO apt-get install -y -qq \
-    build-essential git curl file wget cpio unzip rsync bc \
+    build-essential git curl file wget cpio unzip rsync bc patch \
     libncurses-dev libssl-dev pkg-config \
     qemu-system-x86 ovmf \
     >/dev/null
@@ -59,6 +59,18 @@ fi
 # Make cargo visible for the rest of this script even on fresh installs.
 export PATH="$HOME/.cargo/bin:$PATH"
 rustup component add rustfmt clippy >/dev/null 2>&1 || true
+# The OS image ships static musl binaries (see kernel/README.md).
+rustup target add x86_64-unknown-linux-musl >/dev/null 2>&1 || true
+
+# ---- 3b. KVM access ----------------------------------------------------------
+# /dev/kvm existing is not enough — the user must be able to open it.
+if [ -e /dev/kvm ] && [ ! -w /dev/kvm ] && [ "$(id -u)" -ne 0 ]; then
+    step "adding $USER to the kvm group (needed to open /dev/kvm)"
+    $SUDO usermod -aG kvm "$USER" || warn "could not add to kvm group"
+    warn "group change takes effect after WSL restarts: run 'wsl --shutdown'"
+    warn "from Windows once setup finishes, then reopen. Until then QEMU runs"
+    warn "unaccelerated."
+fi
 
 # ---- 4. Buildroot (fetch now, build later) ----------------------------------
 if [ -d "$BUILDROOT_DIR/.git" ]; then
@@ -102,10 +114,14 @@ cat <<EOF
    Fast dev loop (runs the mind plane on this host):
        tools/dev-run.sh
 
-   Build the OS image (first build ~30-60 min, then cached):
+   Build the OS image (first build ~30-60 min, then cached).
+   NOTE the PATH export - Buildroot refuses the space-laden PATH
+   that WSL inherits from Windows (build-image.bat does all this):
+       export PATH=\$HOME/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+       cargo build --release --target x86_64-unknown-linux-musl --locked
        cd $BUILDROOT_DIR
        make BR2_EXTERNAL=$REPO_DIR/kernel/buildroot-external clade_x86_64_defconfig
-       make
+       make clade-reinstall && make
 
    Boot your own OS:
        $REPO_DIR/tools/qemu-run.sh $BUILDROOT_DIR/output/images

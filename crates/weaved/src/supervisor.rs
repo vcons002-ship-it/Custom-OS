@@ -81,10 +81,24 @@ impl Supervisor {
         });
     }
 
-    /// Block until every launched service is currently up (M0 readiness).
-    pub fn await_all_up(&self) {
+    /// Block until every launched service is currently up (M0 readiness) —
+    /// or the timeout passes, in which case we log who is missing and
+    /// proceed; the supervisor keeps restarting stragglers with backoff.
+    pub fn await_all_up(&self, timeout: Duration) {
+        let start = std::time::Instant::now();
         loop {
-            if self.up.lock().expect("supervisor lock").len() >= self.expected {
+            let up_count = self.up.lock().expect("supervisor lock").len();
+            if up_count >= self.expected {
+                return;
+            }
+            if start.elapsed() >= timeout {
+                log(
+                    "supervisor",
+                    &format!(
+                        "proceeding with {up_count}/{} services up after {:?} — the rest keep retrying",
+                        self.expected, timeout
+                    ),
+                );
                 return;
             }
             std::thread::sleep(Duration::from_millis(50));
