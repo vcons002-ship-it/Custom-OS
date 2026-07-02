@@ -25,9 +25,18 @@ if [ ! -f "$DATA_DISK" ]; then
     mkfs.ext4 -q -F "$DATA_DISK"
 fi
 
-# GUI mode: virtio-gpu window (no gl=on — GL under WSLg is unreliable and we
-# don't need 3D yet). The LAST console= becomes /dev/console, i.e. where
-# weaved's banner goes: the GUI window when there is one, serial otherwise.
+# GUI needs a display server (WSLg exports DISPLAY/WAYLAND_DISPLAY); without
+# one, '-display gtk' hard-exits — fall back to headless with a message.
+if [ "$MODE" != "headless" ] && [ -z "${DISPLAY:-}${WAYLAND_DISPLAY:-}" ]; then
+    echo "[qemu-run] no display server (WSLg?) — falling back to headless/serial"
+    MODE=headless
+fi
+
+# GUI mode: virtio-gpu is the ONLY display adapter (-vga none: QEMU's default
+# std-VGA would otherwise be the head the window shows — blank). No gl=on:
+# GL under WSLg is unreliable and we don't need 3D yet. The LAST console=
+# becomes /dev/console, i.e. where weaved's banner goes: the GUI window when
+# there is one, serial otherwise.
 if [ "$MODE" = "headless" ]; then
     DISPLAY_ARGS="-display none"
     CONSOLES="console=tty0 console=ttyS0"
@@ -49,10 +58,16 @@ else
     KVM_ARGS="-cpu qemu64"
 fi
 
+# Size the VM to what this environment actually has (the reference 12G only
+# when the WSL VM is big enough — .wslconfig may not have applied).
+VM_MEM=$(awk '/MemTotal/ { kb=$2; if (kb > 15000000) print "12G"; else if (kb > 9000000) print "6G"; else print "3G" }' /proc/meminfo)
+echo "[qemu-run] VM memory: $VM_MEM"
+
 exec qemu-system-x86_64 \
   $KVM_ARGS \
   -smp 8 \
-  -m 12G \
+  -m "$VM_MEM" \
+  -vga none \
   -kernel "$IMAGES/bzImage" \
   -drive file="$IMAGES/rootfs.ext4",format=raw,if=virtio \
   -drive file="$DATA_DISK",format=raw,if=virtio \
