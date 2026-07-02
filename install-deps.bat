@@ -19,13 +19,13 @@ if errorlevel 1 (
     goto :end
 )
 
-for %%A in ("%~dp0.") do set "WINREPO=%%~fA"
-
 echo   [*] Installing Clade's Linux dependencies (tools/setup.sh in WSL) ...
 echo.
-rem Prefer the WSL-side repo copy (fast filesystem); fall back to running
-rem the installer straight from this Windows checkout.
-wsl -d %DISTRO% -- bash -lc "if [ -f ~/clade/Custom-OS/tools/setup.sh ]; then bash ~/clade/Custom-OS/tools/setup.sh; else SRC=\"$(wslpath -u '%WINREPO%')\"; bash \"$SRC/tools/setup.sh\"; fi"
+rem --cd starts bash inside THIS folder via WSL's automount - no path
+rem conversion, no command substitution, no escaped quotes to mangle.
+rem Prefer the fast WSL-side repo copy; create it from this checkout if
+rem missing, then run the installer there.
+wsl -d %DISTRO% --cd "%~dp0" -- bash -lc "set -e; if [ ! -f $HOME/clade/Custom-OS/tools/setup.sh ]; then echo '[install-deps] copying repo into WSL filesystem...'; mkdir -p $HOME/clade/Custom-OS; cp -a . $HOME/clade/Custom-OS/; fi; cd $HOME/clade/Custom-OS; exec bash tools/setup.sh"
 
 if errorlevel 1 (
     echo.

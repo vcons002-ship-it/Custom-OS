@@ -12,8 +12,6 @@ rem  Safe to re-run at any point; each step skips itself when done.
 rem ============================================================
 
 set "DISTRO=Ubuntu-24.04"
-set "REPO_URL=https://github.com/vcons002-ship-it/Custom-OS.git"
-set "REPO_BRANCH=claude/ai-adaptive-os-design-cu824a"
 
 echo.
 echo   C L A D E  --  setup (Windows 11 host)
@@ -98,16 +96,15 @@ if "!NEED_RESTART!"=="1" (
 rem ---- 4. Hand off to Linux ------------------------------------
 rem The repo this .bat lives in is copied INTO the WSL filesystem
 rem (~/clade/Custom-OS) - builds on /mnt/c are painfully slow, and
-rem copying needs no GitHub credentials. Falls back to git clone if
-rem the script somehow runs outside a checkout.
-for %%A in ("%~dp0.") do set "WINREPO=%%~fA"
-
+rem copying needs no GitHub credentials. --cd starts bash inside
+rem this folder via WSL's automount: no path conversion, no command
+rem substitution, no escaped quotes for wsl.exe to mangle.
 echo   [*] Copying the repo into WSL and running tools/setup.sh
 echo       ^(installs packages, Rust, QEMU, Buildroot + verifies the
 echo        dev loop - a few minutes on first run^) ...
 echo.
 
-wsl -d %DISTRO% -- bash -lc "set -e; SRC=\"$(wslpath -u '%WINREPO%')\"; mkdir -p ~/clade/Custom-OS; if [ -f \"$SRC/Cargo.toml\" ]; then cp -a \"$SRC/.\" ~/clade/Custom-OS/; elif [ ! -d ~/clade/Custom-OS/.git ]; then git clone --branch %REPO_BRANCH% %REPO_URL% ~/clade/Custom-OS; fi; cd ~/clade/Custom-OS && bash tools/setup.sh"
+wsl -d %DISTRO% --cd "%~dp0" -- bash -lc "set -e; mkdir -p $HOME/clade/Custom-OS; cp -a . $HOME/clade/Custom-OS/; cd $HOME/clade/Custom-OS; exec bash tools/setup.sh"
 
 if errorlevel 1 (
     echo.

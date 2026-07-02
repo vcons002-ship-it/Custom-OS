@@ -24,7 +24,9 @@ if errorlevel 1 (
     goto :end
 )
 
-wsl -d %DISTRO% -- bash -lc "set -e; cd ~/clade/Custom-OS 2>/dev/null || { echo '  [!] repo not found in WSL - run setup.bat first'; exit 1; }; IMG=$HOME/clade/buildroot/output/images; MODE='%MODE%'; if [ \"$MODE\" = dev ]; then exec tools/dev-run.sh; fi; if [ -f \"$IMG/bzImage\" ] && [ -f \"$IMG/rootfs.ext4\" ]; then exec tools/qemu-run.sh \"$IMG\" ${MODE:+$MODE}; else echo; echo '  [*] The Clade OS image is not built yet - starting the dev harness'; echo '      (same mind-plane services, no VM). To build the real image once'; echo '      (~30-60 min, then cached):'; echo; echo '        wsl -d Ubuntu-24.04'; echo '        cd ~/clade/buildroot'; echo '        make BR2_EXTERNAL=$HOME/clade/Custom-OS/kernel/buildroot-external clade_x86_64_defconfig'; echo '        make'; echo; exec tools/dev-run.sh; fi"
+rem All paths below are $HOME-relative (no spaces possible), so the payload
+rem needs no escaped quotes or path conversion for wsl.exe to mangle.
+wsl -d %DISTRO% -- bash -lc "set -e; cd $HOME/clade/Custom-OS 2>/dev/null || { echo '  [!] repo not found in WSL - run setup.bat first'; exit 1; }; IMG=$HOME/clade/buildroot/output/images; MODE='%MODE%'; if [ x$MODE = xdev ]; then exec tools/dev-run.sh; fi; if [ -f $IMG/bzImage ] && [ -f $IMG/rootfs.ext4 ]; then exec tools/qemu-run.sh $IMG $MODE; else echo; echo '  [*] The Clade OS image is not built yet - starting the dev harness'; echo '      (same mind-plane services, no VM). To build the real image once'; echo '      (~30-60 min, then cached):'; echo; echo '        wsl -d Ubuntu-24.04'; echo '        cd ~/clade/buildroot'; echo '        make BR2_EXTERNAL=$HOME/clade/Custom-OS/kernel/buildroot-external clade_x86_64_defconfig'; echo '        make'; echo; exec tools/dev-run.sh; fi"
 
 :end
 echo.
