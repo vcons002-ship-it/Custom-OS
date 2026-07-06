@@ -102,6 +102,9 @@ fn log_event(event: &Event) {
             log("bus", &format!("{service} down (code {code:?})"))
         }
         Event::WeaveReady => log("bus", "weave-ready"),
+        Event::SubstrateChanged { sub_id, change, .. } => {
+            log("bus", &format!("substrate {change:?} {sub_id}"))
+        }
         Event::Heartbeat { .. } => {} // liveness is for peers, not the console
     }
 }
