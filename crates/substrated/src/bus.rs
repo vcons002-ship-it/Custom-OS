@@ -24,6 +24,9 @@ pub fn run(name: &str, events: Receiver<Event>, shutdown: &'static AtomicBool) {
             return;
         }
     };
+    // The bus echoes every frame back to us; drain them or the recv buffer
+    // fills and stalls the whole bus (we only ever publish here).
+    let _ = bus.spawn_drain();
     let _ = bus.publish(&Event::ServiceUp {
         service: name.into(),
         pid: std::process::id(),

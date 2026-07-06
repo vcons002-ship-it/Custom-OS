@@ -56,6 +56,31 @@ impl Indexer {
         let conn = db::open_rw(db_path)?;
         // Keep meta.embed_model in sync with the active embedder.
         db::set_meta(&conn, "embed_model", embedder.model_id())?;
+
+        // Recover a file that was mid-embed when a prior run aborted (under
+        // panic=abort a crafted image can panic a decoder). Its durable marker
+        // outlives the crash; quarantine it so the next scan skips it instead
+        // of crash-looping.
+        if let Some(stuck) = db::get_meta(&conn, "indexing_path")? {
+            if !stuck.is_empty() {
+                crate::log(
+                    "substrated",
+                    &format!("recovering poisoned file from prior crash: {stuck}"),
+                );
+                let (size, mtime_ns) = std::fs::metadata(&stuck)
+                    .map(|m| (m.len() as i64, m.mtime() * 1_000_000_000 + m.mtime_nsec()))
+                    .unwrap_or((0, 0));
+                conn.execute(
+                    "INSERT INTO failed_files(path,size,mtime_ns,error,failed_ts)
+                     VALUES(?1,?2,?3,'aborted during embed (recovered at startup)',?4)
+                     ON CONFLICT(path) DO UPDATE SET size=excluded.size,
+                       mtime_ns=excluded.mtime_ns, error=excluded.error, failed_ts=excluded.failed_ts",
+                    rusqlite::params![stuck, size, mtime_ns, db::now_secs()],
+                )?;
+                db::set_meta(&conn, "indexing_path", "")?;
+            }
+        }
+
         // Resume monotonicity across restarts.
         let last_stamp: i64 =
             conn.query_row("SELECT COALESCE(MAX(seen_ts),0) FROM files", [], |r| {
@@ -66,6 +91,25 @@ impl Indexer {
             embedder,
             last_stamp,
         })
+    }
+
+    /// An embed failure: drop any stale mapping for `path` (so it stops
+    /// resolving to prior content), GC an orphaned prior item, then quarantine.
+    fn fail_path(
+        &mut self,
+        path_str: &str,
+        size: i64,
+        mtime_ns: i64,
+        prior: &Option<(i64, String)>,
+        err: &str,
+    ) -> Result<()> {
+        if let Some((old_id, _)) = prior {
+            let tx = self.conn.transaction()?;
+            tx.execute("DELETE FROM files WHERE path=?1", [path_str])?;
+            gc_item_if_orphan(&tx, *old_id)?;
+            tx.commit()?;
+        }
+        self.quarantine(path_str, size, mtime_ns, err)
     }
 
     /// A strictly-increasing scan/upsert stamp (ns, never repeats).
@@ -150,30 +194,41 @@ impl Indexer {
         // What (if anything) did this path map to before?
         let prior = db::item_id_for_path(&self.conn, &path_str)?;
 
+        // Embed NEW content OUTSIDE any transaction. Under panic=abort an abort
+        // inside a decoder would roll back an open transaction — so the poison
+        // marker is written durably (autocommit) before decode and recovered by
+        // `open()` on the next start, breaking a crash loop on a bad file.
+        let existing = item_id_by_hash(&self.conn, &content_hash)?;
+        let mut fresh: Option<(crate::embed::Embedding, crate::exif::ExifInfo)> = None;
+        if existing.is_none() {
+            db::set_meta(&self.conn, "indexing_path", &path_str)?;
+            match self.embedder.embed(&bytes) {
+                Ok(embedding) => {
+                    let ex = exif::read(&bytes);
+                    db::set_meta(&self.conn, "indexing_path", "")?;
+                    fresh = Some((embedding, ex));
+                }
+                Err(e) => {
+                    db::set_meta(&self.conn, "indexing_path", "")?;
+                    // Drop any stale mapping so a file modified into garbage
+                    // stops resolving to its old content, then quarantine.
+                    self.fail_path(&path_str, size, mtime_ns, &prior, &e.to_string())?;
+                    return Ok(Outcome::Failed(e.to_string()));
+                }
+            }
+        }
+
         let tx = self.conn.transaction()?;
-        let outcome;
-        let item_id = if let Some(id) = item_id_by_hash(&tx, &content_hash)? {
+        let (item_id, outcome) = if let Some(id) = existing {
             // Content already known — dedup or move. No embed needed.
-            outcome = match &prior {
-                Some((pid, phash)) if *phash == content_hash => Outcome::Unchanged,
+            let outcome = match &prior {
+                Some((_, phash)) if *phash == content_hash => Outcome::Unchanged,
                 Some(_) => Outcome::Updated,
                 None => Outcome::Deduped,
             };
-            id
+            (id, outcome)
         } else {
-            // New content: embed (poison-marker guards a panic under abort).
-            db::set_meta(&tx, "indexing_path", &path_str)?;
-            let embedding = match self.embedder.embed(&bytes) {
-                Ok(e) => e,
-                Err(e) => {
-                    db::set_meta(&tx, "indexing_path", "")?;
-                    tx.commit()?;
-                    self.quarantine(&path_str, size, mtime_ns, &e.to_string())?;
-                    return Ok(Outcome::Failed(e.to_string()));
-                }
-            };
-            db::set_meta(&tx, "indexing_path", "")?;
-            let ex = exif::read(&bytes);
+            let (embedding, ex) = fresh.expect("new content embedded above");
             let now = db::now_secs();
             let sub_id = hashid::sub_id_for(&content_hash);
             tx.execute(
@@ -212,12 +267,12 @@ impl Indexer {
             )?;
             // A new item, but if this path previously held other content it is
             // an update of that location, not a fresh discovery.
-            outcome = if prior.is_some() {
+            let outcome = if prior.is_some() {
                 Outcome::Updated
             } else {
                 Outcome::Indexed
             };
-            id
+            (id, outcome)
         };
 
         // Point this path at the resolved item.
@@ -283,8 +338,12 @@ impl Indexer {
     /// Delete `files` rows under `root` not touched this scan, GC orphaned
     /// items, and drop quarantine entries whose file is gone.
     fn sweep_deleted(&mut self, root: &Path, scan_ts: i64) -> Result<usize> {
-        let root_str = root.to_string_lossy().to_string();
-        let like = format!("{}%", escape_like(&format!("{root_str}/")));
+        // Normalize away a trailing slash so the prefix matches WalkDir's
+        // single-slash child paths (a trailing-slash CLADE_LIBRARY would
+        // otherwise build "/lib//%" and match nothing).
+        let root_str = root.to_string_lossy();
+        let base = root_str.strip_suffix('/').unwrap_or(&root_str).to_string();
+        let like = format!("{}%", escape_like(&format!("{base}/")));
         let tx = self.conn.transaction()?;
 
         let mut stale: Vec<i64> = Vec::new();
@@ -293,17 +352,34 @@ impl Indexer {
                 "SELECT DISTINCT item_id FROM files
                  WHERE seen_ts < ?1 AND (path = ?2 OR path LIKE ?3 ESCAPE '\\')",
             )?;
-            let mut rows = stmt.query(rusqlite::params![scan_ts, root_str, like])?;
+            let mut rows = stmt.query(rusqlite::params![scan_ts, base, like])?;
             while let Some(row) = rows.next()? {
                 stale.push(row.get(0)?);
             }
         }
         let removed = tx.execute(
             "DELETE FROM files WHERE seen_ts < ?1 AND (path = ?2 OR path LIKE ?3 ESCAPE '\\')",
-            rusqlite::params![scan_ts, root_str, like],
+            rusqlite::params![scan_ts, base, like],
         )?;
         for id in stale {
             gc_item_if_orphan(&tx, id)?;
+        }
+        // Prune quarantine entries under this root whose file is gone, so a
+        // later recreation of the same path is retried rather than skipped.
+        let mut orphan_failed: Vec<String> = Vec::new();
+        {
+            let mut stmt = tx.prepare(
+                "SELECT path FROM failed_files WHERE path = ?1 OR path LIKE ?2 ESCAPE '\\'",
+            )?;
+            let mut rows = stmt.query(rusqlite::params![base, like])?;
+            while let Some(row) = rows.next()? {
+                orphan_failed.push(row.get(0)?);
+            }
+        }
+        for p in orphan_failed {
+            if !Path::new(&p).exists() {
+                tx.execute("DELETE FROM failed_files WHERE path=?1", [&p])?;
+            }
         }
         tx.commit()?;
         Ok(removed)

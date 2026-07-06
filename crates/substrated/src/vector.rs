@@ -78,7 +78,10 @@ pub fn top_n(query: &[f32], entries: &[CacheEntry], exclude_hash: &str, n: usize
     if n == 0 {
         return Vec::new();
     }
-    let mut heap: BinaryHeap<MinScored> = BinaryHeap::with_capacity(n + 1);
+    // Bound the pre-allocation to the data size — `n` comes from `--top` and a
+    // huge value would otherwise overflow/abort the allocation.
+    let mut heap: BinaryHeap<MinScored> =
+        BinaryHeap::with_capacity(n.min(entries.len()).saturating_add(1));
     for e in entries {
         if e.content_hash == exclude_hash || e.vec.len() != query.len() {
             continue;
@@ -146,6 +149,20 @@ mod tests {
         assert_eq!(out[0].item_id, 2);
         assert_eq!(out[1].item_id, 4);
         assert!(out[0].score >= out[1].score);
+    }
+
+    #[test]
+    fn topn_huge_n_does_not_panic() {
+        // `--top` is caller-controlled; a huge value must not overflow the
+        // pre-allocation. Returns at most the available entries.
+        let q = vec![1.0, 0.0];
+        let entries = vec![CacheEntry {
+            item_id: 1,
+            content_hash: "a".into(),
+            vec: vec![1.0, 0.0],
+        }];
+        let out = top_n(&q, &entries, "", usize::MAX / 2);
+        assert_eq!(out.len(), 1);
     }
 
     #[test]

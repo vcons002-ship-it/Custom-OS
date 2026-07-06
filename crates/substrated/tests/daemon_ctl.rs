@@ -11,19 +11,23 @@ use std::time::{Duration, Instant};
 
 const BIN: &str = env!("CARGO_BIN_EXE_substrated");
 
-/// A throwaway bus so the daemon's BusClient::connect succeeds; drains frames.
+/// A throwaway bus so the daemon's BusClient::connect succeeds. It ECHOES
+/// every frame back to the sender — mirroring the real weaved bus — so this
+/// test exercises the client's inbound-drain path (without which the socket
+/// buffer fills and the whole bus deadlocks).
 fn fake_bus(path: &Path) {
     let listener = UnixListener::bind(path).unwrap();
     std::thread::spawn(move || {
         for stream in listener.incoming() {
             let Ok(mut stream) = stream else { break };
             std::thread::spawn(move || {
-                use std::io::Read;
-                let mut buf = [0u8; 1024];
+                use std::io::{Read, Write};
+                let mut buf = [0u8; 4096];
                 while let Ok(n) = stream.read(&mut buf) {
                     if n == 0 {
                         break;
                     }
+                    let _ = stream.write_all(&buf[..n]); // echo back to sender
                 }
             });
         }

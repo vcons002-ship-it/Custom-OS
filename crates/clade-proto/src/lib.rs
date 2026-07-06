@@ -111,6 +111,27 @@ impl BusClient {
         Ok(())
     }
 
+    /// Spawn a background thread that reads and discards inbound frames, so a
+    /// publish-only client never lets the socket's receive buffer fill. The bus
+    /// echoes every frame back to senders, so a client that only publishes (and
+    /// never calls [`next_event`](Self::next_event)) would otherwise stall the
+    /// whole bus once its recv buffer fills. Call once, right after connecting.
+    pub fn spawn_drain(&self) -> std::io::Result<()> {
+        let stream = self.writer.try_clone()?;
+        std::thread::spawn(move || {
+            let mut reader = BufReader::new(stream);
+            let mut line = String::new();
+            loop {
+                line.clear();
+                match reader.read_line(&mut line) {
+                    Ok(0) | Err(_) => break,
+                    Ok(_) => {}
+                }
+            }
+        });
+        Ok(())
+    }
+
     /// Block for the next event broadcast on the bus.
     pub fn next_event(&mut self) -> anyhow::Result<Event> {
         let mut line = String::new();

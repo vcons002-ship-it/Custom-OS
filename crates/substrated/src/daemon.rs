@@ -43,6 +43,10 @@ pub fn run() -> Result<()> {
     let db_path = config::db_path();
     let library = config::library_path();
     std::fs::create_dir_all(&library).ok();
+    // Scan/watch a canonical root so stored paths (WalkDir children) match the
+    // CLI's canonicalized query path — otherwise a symlinked library makes
+    // every query miss.
+    let library = std::fs::canonicalize(&library).unwrap_or(library);
 
     let ix = Indexer::open(&db_path, Box::new(PhashHistEmbedder::new()))?;
     crate::log(

@@ -107,9 +107,12 @@ fn cmd_reindex(json: bool) -> Result<()> {
         Some(ctl::Reply::Error(e)) => bail!(e),
         Some(_) => bail!("unexpected reply"),
         None => {
-            // Standalone: we are the only process; scan directly.
+            // Standalone: we are the only process; scan directly. Canonicalize
+            // the root so stored paths match the CLI's canonicalized query.
             let mut ix = Indexer::open(&config::db_path(), Box::new(PhashHistEmbedder::new()))?;
-            let report = ix.scan_root(&config::library_path())?;
+            let lib = config::library_path();
+            let lib = std::fs::canonicalize(&lib).unwrap_or(lib);
+            let report = ix.scan_root(&lib)?;
             crate::log("substrated", &format!("reindex: {report:?}"));
             db::stats(ix.connection())?
         }
