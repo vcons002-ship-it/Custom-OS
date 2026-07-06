@@ -41,6 +41,23 @@ pub enum Event {
     WeaveReady,
     /// A supervised service exited and will be restarted with backoff.
     ServiceDown { service: String, code: Option<i32> },
+    /// substrated indexed, updated, or dropped a library item. Emitted only on
+    /// steady-state live changes; the initial cold scan is silent.
+    SubstrateChanged {
+        sub_id: String,
+        content_hash: String,
+        path: String,
+        change: SubstrateChange,
+    },
+}
+
+/// The lifecycle transition carried by [`Event::SubstrateChanged`].
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum SubstrateChange {
+    Indexed,
+    Updated,
+    Removed,
 }
 
 impl Event {
@@ -91,6 +108,27 @@ impl BusClient {
 
     pub fn publish(&mut self, event: &Event) -> anyhow::Result<()> {
         self.writer.write_all(&event.to_frame()?)?;
+        Ok(())
+    }
+
+    /// Spawn a background thread that reads and discards inbound frames, so a
+    /// publish-only client never lets the socket's receive buffer fill. The bus
+    /// echoes every frame back to senders, so a client that only publishes (and
+    /// never calls [`next_event`](Self::next_event)) would otherwise stall the
+    /// whole bus once its recv buffer fills. Call once, right after connecting.
+    pub fn spawn_drain(&self) -> std::io::Result<()> {
+        let stream = self.writer.try_clone()?;
+        std::thread::spawn(move || {
+            let mut reader = BufReader::new(stream);
+            let mut line = String::new();
+            loop {
+                line.clear();
+                match reader.read_line(&mut line) {
+                    Ok(0) | Err(_) => break,
+                    Ok(_) => {}
+                }
+            }
+        });
         Ok(())
     }
 
@@ -166,5 +204,21 @@ mod tests {
         };
         let json = serde_json::to_string(&e).unwrap();
         assert_eq!(json, r#"{"event":"service-up","service":"capd","pid":1}"#);
+    }
+
+    #[test]
+    fn substrate_changed_wire_stable() {
+        let e = Event::SubstrateChanged {
+            sub_id: "sub:item/img_abc123def456".into(),
+            content_hash: "blake3:ff".into(),
+            path: "/data/library/a.jpg".into(),
+            change: SubstrateChange::Indexed,
+        };
+        let json = serde_json::to_string(&e).unwrap();
+        assert_eq!(
+            json,
+            r#"{"event":"substrate-changed","sub_id":"sub:item/img_abc123def456","content_hash":"blake3:ff","path":"/data/library/a.jpg","change":"indexed"}"#
+        );
+        assert_eq!(Event::from_frame(&json).unwrap(), e);
     }
 }

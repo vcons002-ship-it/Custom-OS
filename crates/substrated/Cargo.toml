@@ -8,3 +8,25 @@ license.workspace = true
 [dependencies]
 clade-proto = { workspace = true }
 anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+libc = { workspace = true }
+# The one sanctioned C dependency: bundled SQLite (FTS5 + STRICT).
+rusqlite = { version = "0.32", features = ["bundled"] }
+# Content-hash identity. `pure` drops blake3's cc/asm path so SQLite stays the
+# sole C dep across the Buildroot cross build.
+blake3 = { version = "1", default-features = false, features = ["std", "pure"] }
+# Image decode + resize for the model-free featurizer. All decoders below are
+# pure Rust; avif (C: aom/dav1d) and rayon stay OFF.
+image = { version = "0.25", default-features = false, features = ["jpeg", "png", "gif", "bmp", "tiff", "webp"] }
+# Pure-Rust EXIF: orientation, capture time, camera make/model.
+kamadak-exif = "0.5"
+# Filesystem watcher (Linux inotify backend is pure Rust) + recursive scan.
+notify = "6"
+walkdir = "2"
+
+[dev-dependencies]
+tempfile = "3"
+libc = { workspace = true }
+# Integration tests synthesize photos; features unify with the main dep.
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
