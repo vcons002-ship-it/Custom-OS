@@ -145,6 +145,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
 
 [[package]]
+name = "clade-facets"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "clade-journal"
 version = "0.1.0"
 dependencies = [
@@ -602,7 +610,10 @@ name = "modeld"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "clade-facets",
  "clade-proto",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
