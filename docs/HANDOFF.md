@@ -40,8 +40,9 @@ computers. (One letter from *Claude*, by coincidence — kept as an homage.)
 | **M0 — Scaffold** (weaved PID 1, bus, Journal, service stubs, Buildroot tree, CI) | ✅ merged |
 | **M1 — Boot to a frame** (DRM/KMS, presence dot) | ✅ merged (parallel sessions) |
 | **M2 — The Weave shell** (zones, Materialize/Dissolve, renderer decision) | ✅ merged (parallel sessions) |
-| **M3 — The Substrate** (image indexer + embeddings + search) | ✅ **merged (this session)** |
-| **M4 — modeld + Facets** (on-device model, real CLIP embeddings, router) | ⏭️ **next** |
+| **M3 — The Substrate** (image indexer + embeddings + search) | ✅ merged |
+| **M4 — modeld + Facets** | 🟡 **partial** — Facet Resolution (deterministic tier) + router policy engine done; on-device CLIP/LLM model tier remains (needs GPU + weights) |
+| **M4 remaining** — link llama.cpp/CLIP; implement `FacetRefiner` + `ClipEmbedder`; wire `gated` to Ollama/Gemini | ⏭️ **next** |
 | **M5 — Capabilities materialize** (capd loads manifests → real Surfaces) | ⬜ |
 | **M6 — Cortex + Foresight + Journal + gated call** (full exit gate) | ⬜ |
 | **M7 — Integrate & capture** (metrics, recorded demo) | ⬜ |
